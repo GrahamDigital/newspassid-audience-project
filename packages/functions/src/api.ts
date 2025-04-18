@@ -1,11 +1,11 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import {
-  S3Client,
   GetObjectCommand,
   PutObjectCommand,
+  S3Client,
 } from "@aws-sdk/client-s3";
-import { getCorsHeaders } from "./utils";
+import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { parse } from "csv-parse/sync";
+import { getCorsHeaders } from "./utils";
 
 const s3 = new S3Client();
 const ID_FOLDER = process.env.ID_FOLDER || "newspassid";
@@ -46,7 +46,7 @@ async function getValidSegments(segmentsFile: string): Promise<string[]> {
       new GetObjectCommand({
         Bucket: process.env.STORAGE_BUCKET || "",
         Key: segmentsFile,
-      })
+      }),
     );
 
     if (!response.Body) {
@@ -74,7 +74,7 @@ function validateId(id: string): boolean {
 }
 
 export const handler = async (
-  event: APIGatewayProxyEvent
+  event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
   // Handle CORS preflight
   if (event.httpMethod === "OPTIONS") {
@@ -141,7 +141,7 @@ export const handler = async (
         Key: `${ID_FOLDER}/publisher/${domain}/${data.id}/${data.timestamp}.csv`,
         ContentType: "text/csv",
         Body: csvContent,
-      })
+      }),
     );
 
     // If there's a previous ID, create a mapping
@@ -157,7 +157,7 @@ export const handler = async (
           Key: `${ID_FOLDER}/publisher/mappings/${data.previousId}.csv`,
           ContentType: "text/csv",
           Body: mappingContent,
-        })
+        }),
       );
     }
 

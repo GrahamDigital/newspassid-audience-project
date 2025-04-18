@@ -4,7 +4,7 @@ import { APIGatewayProxyEvent } from "aws-lambda";
  * Get CORS headers for the response
  */
 export function getCorsHeaders(
-  event: APIGatewayProxyEvent
+  event: APIGatewayProxyEvent,
 ): Record<string, string> {
   const origin = event.headers?.origin || "*";
   return {

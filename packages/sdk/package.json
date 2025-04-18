@@ -1,0 +1,12 @@
+{
+  "name": "@newspassid-audience/sdk",
+  "version": "0.0.0",
+  "type": "module",
+  "dependencies": {
+    "@newspassid-audience/core": "*",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0"
+  }
+}
