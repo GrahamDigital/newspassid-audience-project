@@ -29,11 +29,12 @@
     </script>
 
     <!-- NewsPassID Async Loader - Place as early as possible in the head -->
-    <script>
+    <script type="module">
       // Publisher configuration
-      var NEWSPASS_CONFIG = {
+      window.NEWSPASS_CONFIG = {
         namespace: "gmg",
-        lambdaEndpoint: "https://npid.gmg.io/newspassid",
+        // lambdaEndpoint: "https://npid.gmg.io/newspassid",
+        lambdaEndpoint: import.meta.env.VITE_PUBLIC_API_URL.slice(0, -1),
       };
 
       // Initialize the queue and NewsPassID global object

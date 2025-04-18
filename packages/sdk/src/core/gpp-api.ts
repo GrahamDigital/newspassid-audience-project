@@ -1,7 +1,7 @@
 /**
  * IAB GPP API integration
  */
-import { GPPData } from './types';
+// import { GPPData } from "./types";
 
 /**
  * Get consent string using the IAB GPP JavaScript API
@@ -9,12 +9,12 @@ import { GPPData } from './types';
 export async function getGppConsentString(): Promise<string | undefined> {
   try {
     // Check if the GPP API is available
-    if (typeof window.__gpp === 'function') {
+    if (typeof window.__gpp === "function") {
       // Use GPP API to get the consent string
       // Return a promise to handle the async nature of the GPP API
-      return new Promise<string | undefined>((resolve) => {
-        window.__gpp!('getGPPData', (data, success) => {
-          if (success && data && data.gppString) {
+      const gppString = await new Promise<string | undefined>((resolve) => {
+        window.__gpp?.("getGPPData", (data, success) => {
+          if (success && data?.gppString) {
             resolve(data.gppString);
           } else {
             // Try fallback method
@@ -23,12 +23,13 @@ export async function getGppConsentString(): Promise<string | undefined> {
           }
         });
       });
+      return gppString;
     } else {
       // Fallback to cookies if the GPP API is not available
       return getGppConsentFromCookie();
     }
   } catch (e) {
-    console.warn('newspassid: Error getting GPP consent:', e);
+    console.warn("newspassid: Error getting GPP consent:", e);
     // Try fallback method
     return getGppConsentFromCookie();
   }
@@ -40,19 +41,19 @@ export async function getGppConsentString(): Promise<string | undefined> {
 export function getGppConsentFromCookie(): string | undefined {
   try {
     // Try to get GPP cookie
-    const gppCookie = getCookie('gpp');
+    const gppCookie = getCookie("gpp");
     if (!gppCookie) {
       // Also try common alternative cookie names
-      const uspCookie = getCookie('usprivacy');
-      const tcfCookie = getCookie('euconsent-v2');
-      
-      return uspCookie || tcfCookie || undefined;
+      const uspCookie = getCookie("usprivacy");
+      const tcfCookie = getCookie("euconsent-v2");
+
+      return uspCookie ?? tcfCookie ?? undefined;
     }
-    
+
     // Return the GPP string
     return gppCookie;
   } catch (e) {
-    console.warn('newspassid: Error getting GPP consent from cookie:', e);
+    console.warn("newspassid: Error getting GPP consent from cookie:", e);
     return undefined;
   }
 }
@@ -61,6 +62,6 @@ export function getGppConsentFromCookie(): string | undefined {
  * Helper to get a cookie by name
  */
 function getCookie(name: string): string | null {
-  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  const match = new RegExp("(^| )" + name + "=([^;]+)").exec(document.cookie);
   return match ? match[2] : null;
 }

@@ -52,6 +52,7 @@ class NewsPassIDImpl implements NewsPassID {
     // Get consent string
     try {
       this.consentString = await getGppConsentString();
+      console.log("newspassid: Consent string:", this.consentString);
     } catch (error) {
       console.warn("newspassid: Failed to get GPP consent:", error);
       this.consentString = "";

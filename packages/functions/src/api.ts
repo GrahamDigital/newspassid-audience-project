@@ -3,12 +3,13 @@ import {
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
+import { Resource } from "sst";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { parse } from "csv-parse/sync";
 import { getCorsHeaders } from "./utils";
 
 const s3 = new S3Client();
-const ID_FOLDER = process.env.ID_FOLDER || "newspassid";
+const ID_FOLDER = process.env.ID_FOLDER ?? "newspassid";
 
 interface LogRecord {
   id: string;
@@ -32,7 +33,7 @@ function getDomainFromUrl(url: string): string {
   try {
     const domain = new URL(url).hostname;
     return domain.replace(/^www\./, "");
-  } catch (e) {
+  } catch {
     return "unknown";
   }
 }
@@ -44,7 +45,7 @@ async function getValidSegments(segmentsFile: string): Promise<string[]> {
   try {
     const response = await s3.send(
       new GetObjectCommand({
-        Bucket: process.env.STORAGE_BUCKET || "",
+        Bucket: Resource.data.name,
         Key: segmentsFile,
       }),
     );
@@ -53,7 +54,7 @@ async function getValidSegments(segmentsFile: string): Promise<string[]> {
       return [];
     }
 
-    const content = response.Body.toString();
+    const content = await response.Body.transformToString();
     const records = parse(content, {
       columns: true,
       skip_empty_lines: true,
@@ -64,13 +65,27 @@ async function getValidSegments(segmentsFile: string): Promise<string[]> {
       .filter((record) => record.expire_timestamp > now)
       .map((record) => record.segments);
   } catch (error) {
+    // If the file doesn't exist yet, return an empty array instead of throwing an error
+    if (
+      error instanceof Error &&
+      "Code" in error &&
+      error.Code === "NoSuchKey"
+    ) {
+      console.info(
+        `Segments file ${segmentsFile} does not exist yet. Returning empty array.`,
+      );
+      return [];
+    }
+
     console.error("Error reading segments:", error);
-    throw error; // Re-throw the error to be handled by the handler
+    throw error; // Re-throw other errors to be handled by the handler
   }
 }
 
 function validateId(id: string): boolean {
-  return /^publisher-\d+$/.test(id);
+  return /^gmg-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    id,
+  );
 }
 
 export const handler = async (
@@ -80,7 +95,7 @@ export const handler = async (
   if (event.httpMethod === "OPTIONS") {
     return {
       statusCode: 200,
-      headers: getCorsHeaders(event),
+      // headers: getCorsHeaders(event),
       body: "",
     };
   }
@@ -90,13 +105,13 @@ export const handler = async (
       throw new Error("Missing request body");
     }
 
-    const data: LogRecord = JSON.parse(event.body);
+    const data = JSON.parse(event.body) as LogRecord;
 
     // Validate required fields
     if (!data.id || !data.timestamp || !data.url || !data.consentString) {
       return {
         statusCode: 400,
-        headers: getCorsHeaders(event),
+        // headers: getCorsHeaders(event),
         body: JSON.stringify({
           success: false,
           error:
@@ -109,7 +124,7 @@ export const handler = async (
     if (!validateId(data.id)) {
       return {
         statusCode: 400,
-        headers: getCorsHeaders(event),
+        // headers: getCorsHeaders(event),
         body: JSON.stringify({
           success: false,
           error: "Invalid ID format",
@@ -129,15 +144,15 @@ export const handler = async (
       "id,timestamp,url,consentString,previousId,segments,publisherSegments",
       `"${data.id}","${data.timestamp}","${data.url}","${
         data.consentString
-      }","${data.previousId || ""}","${validSegments.join(",")}","${
-        data.publisherSegments?.join("|") || ""
+      }","${data.previousId ?? ""}","${validSegments.join(",")}","${
+        data.publisherSegments?.join("|") ?? ""
       }"`,
     ].join("\n");
 
     // Upload to S3
     await s3.send(
       new PutObjectCommand({
-        Bucket: process.env.STORAGE_BUCKET || "",
+        Bucket: Resource.data.name,
         Key: `${ID_FOLDER}/publisher/${domain}/${data.id}/${data.timestamp}.csv`,
         ContentType: "text/csv",
         Body: csvContent,
@@ -153,7 +168,7 @@ export const handler = async (
 
       await s3.send(
         new PutObjectCommand({
-          Bucket: process.env.STORAGE_BUCKET || "",
+          Bucket: Resource.data.name,
           Key: `${ID_FOLDER}/publisher/mappings/${data.previousId}.csv`,
           ContentType: "text/csv",
           Body: mappingContent,
@@ -163,7 +178,7 @@ export const handler = async (
 
     return {
       statusCode: 200,
-      headers: getCorsHeaders(event),
+      // headers: getCorsHeaders(event),
       body: JSON.stringify({
         success: true,
         id: data.id,
@@ -174,7 +189,7 @@ export const handler = async (
     console.error("Error processing request:", error);
     return {
       statusCode: 500,
-      headers: getCorsHeaders(event),
+      // headers: getCorsHeaders(event),
       body: JSON.stringify({
         success: false,
         error: "Internal server error",

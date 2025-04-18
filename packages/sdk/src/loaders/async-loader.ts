@@ -10,7 +10,8 @@ import type { NewsPassConfig } from "../core/types";
 // Retrieve configuration from global variable or use default
 const NEWSPASS_CONFIG: NewsPassConfig = window.NEWSPASS_CONFIG ?? {
   namespace: "default-publisher",
-  lambdaEndpoint: "https://npid.gmg.io/newspassid",
+  // lambdaEndpoint: "https://npid.gmg.io/newspassid",
+  lambdaEndpoint: import.meta.env.VITE_PUBLIC_API_URL.slice(0, -1),
 };
 
 // Initialize the queue and newspassid global object
