@@ -7,7 +7,7 @@ const logFileSizes = () => {
   return {
     name: "log-file-sizes",
     closeBundle: () => {
-      console.log("\nOutput files:");
+      console.info("\nOutput files:");
       [
         "newspassid.js",
         "newspassid.esm.js",
@@ -17,16 +17,37 @@ const logFileSizes = () => {
       ].forEach((file) => {
         try {
           const size = (fs.statSync(`dist/${file}`).size / 1024).toFixed(1);
-          console.log(`- dist/${file} (${size}KB)`);
-        } catch (e) {
+          console.info(`- dist/${file} (${size}KB)`);
+        } catch {
           // Skip files that don't exist yet
+          console.info(`- dist/${file} (not found)`);
         }
       });
     },
   };
 };
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, command }) => {
+  // Dev server configuration
+  if (command === "serve") {
+    return {
+      root: resolve(__dirname, "examples/basic"),
+      publicDir: resolve(__dirname, "dist"),
+      server: {
+        port: 3000,
+        open: true,
+      },
+      build: {
+        outDir: resolve(__dirname, "dist"),
+        emptyOutDir: false,
+        watch: {
+          include: ["src/**"],
+        },
+      },
+      plugins: [logFileSizes()],
+    };
+  }
+
   // Determine build configuration based on mode
   if (mode === "async") {
     return {

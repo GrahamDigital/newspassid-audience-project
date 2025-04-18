@@ -6,16 +6,19 @@
     <title>NewsPassID Basic Example</title>
 
     <!-- Google Ad Manager -->
-    <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"></script>
+    <script
+      async
+      src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"
+    ></script>
     <script>
       window.googletag = window.googletag || { cmd: [] };
       googletag.cmd.push(function () {
         // Define ad slots
         googletag
           .defineSlot(
-            '/6355419/Travel/Europe/France/Paris',
+            "/6355419/Travel/Europe/France/Paris",
             [300, 250],
-            'div-gpt-ad-1682372512510-0',
+            "div-gpt-ad-1682372512510-0",
           )
           .addService(googletag.pubads());
 
@@ -29,8 +32,8 @@
     <script>
       // Publisher configuration
       var NEWSPASS_CONFIG = {
-        namespace: 'gmg',
-        lambdaEndpoint: 'https://npid.gmg.io/newspassid',
+        namespace: "gmg",
+        lambdaEndpoint: "https://npid.gmg.io/newspassid",
       };
 
       // Initialize the queue and NewsPassID global object
@@ -38,30 +41,30 @@
       window.newspassid = window.newspassid || {
         // Stub method that queues calls until the real implementation loads
         setID: function (id) {
-          window.NewsPassIDQ.push(['setID', id]);
+          window.NewsPassIDQ.push(["setID", id]);
         },
         getID: function () {
-          window.NewsPassIDQ.push(['getID']);
+          window.NewsPassIDQ.push(["getID"]);
           return null;
         },
         getSegments: function () {
-          window.NewsPassIDQ.push(['getSegments']);
+          window.NewsPassIDQ.push(["getSegments"]);
           return [];
         },
         clearID: function () {
-          window.NewsPassIDQ.push(['clearID']);
+          window.NewsPassIDQ.push(["clearID"]);
         },
       };
 
       // Function to load the NewsPassID script
       (function () {
         // Create script element
-        var script = document.createElement('script');
-        script.src = 'http://localhost:3000/dist/newspassid-async.min.js'; // Use CDN URL in production
+        var script = document.createElement("script");
+        script.src = "/newspassid-async.js"; // Use the correct path in development mode
         script.async = true;
 
         // Add script to the document
-        const head = document.head || document.getElementsByTagName('head')[0];
+        const head = document.head || document.getElementsByTagName("head")[0];
         head.appendChild(script);
 
         // Set a flag to track initialization state
@@ -149,7 +152,7 @@
       <div id="div-gpt-ad-1682372512510-0">
         <script>
           googletag.cmd.push(function () {
-            googletag.display('div-gpt-ad-1682372512510-0');
+            googletag.display("div-gpt-ad-1682372512510-0");
           });
         </script>
       </div>
@@ -157,16 +160,16 @@
 
     <script>
       // DOM elements
-      const statusEl = document.getElementById('status');
-      const resultsEl = document.getElementById('results');
-      const getIdBtn = document.getElementById('get-id');
-      const getSegmentsBtn = document.getElementById('get-segments');
-      const clearIdBtn = document.getElementById('clear-id');
-      const setIdBtn = document.getElementById('manual-set-id');
+      const statusEl = document.getElementById("status");
+      const resultsEl = document.getElementById("results");
+      const getIdBtn = document.getElementById("get-id");
+      const getSegmentsBtn = document.getElementById("get-segments");
+      const clearIdBtn = document.getElementById("clear-id");
+      const setIdBtn = document.getElementById("manual-set-id");
 
       // Update status when NewsPassID is ready
-      window.addEventListener('newspassSegmentsReady', function (event) {
-        statusEl.textContent = 'NewsPassID is active and segments are loaded.';
+      window.addEventListener("newspassSegmentsReady", function (event) {
+        statusEl.textContent = "NewsPassID is active and segments are loaded.";
         updateResults();
 
         // Refresh ads when segments are ready
@@ -180,49 +183,51 @@
         if (window.newspassid && window.newspassid.getID) {
           const id = window.newspassid.getID();
           if (id) {
-            statusEl.textContent = 'NewsPassID is active.';
+            statusEl.textContent = "NewsPassID is active.";
             clearInterval(checkInterval);
           }
         }
       }, 1000);
 
       // Button event handlers
-      getIdBtn.addEventListener('click', function () {
+      getIdBtn.addEventListener("click", function () {
         if (window.newspassid && window.newspassid.getID) {
           const id = window.newspassid.getID();
-          resultsEl.textContent = `Current ID: ${id || 'No ID set'}`;
+          resultsEl.textContent = `Current ID: ${id || "No ID set"}`;
         } else {
-          resultsEl.textContent = 'NewsPassID not ready yet.';
+          resultsEl.textContent = "NewsPassID not ready yet.";
         }
       });
 
-      getSegmentsBtn.addEventListener('click', function () {
+      getSegmentsBtn.addEventListener("click", function () {
         if (window.newspassid && window.newspassid.getSegments) {
           const segments = window.newspassid.getSegments();
-          resultsEl.textContent = `Segments: ${segments.length ? segments.join(', ') : 'No segments'}`;
+          resultsEl.textContent = `Segments: ${segments.length ? segments.join(", ") : "No segments"}`;
         } else {
-          resultsEl.textContent = 'NewsPassID not ready yet.';
+          resultsEl.textContent = "NewsPassID not ready yet.";
         }
       });
 
-      clearIdBtn.addEventListener('click', function () {
+      clearIdBtn.addEventListener("click", function () {
         if (window.newspassid && window.newspassid.clearID) {
           window.newspassid.clearID();
-          resultsEl.textContent = 'ID cleared.';
-          statusEl.textContent = 'ID cleared. Reload the page to generate a new one.';
+          resultsEl.textContent = "ID cleared.";
+          statusEl.textContent =
+            "ID cleared. Reload the page to generate a new one.";
 
           // Refresh ads after clearing ID
           googletag.cmd.push(function () {
             googletag.pubads().refresh();
           });
         } else {
-          resultsEl.textContent = 'NewsPassID not ready yet.';
+          resultsEl.textContent = "NewsPassID not ready yet.";
         }
       });
 
-      setIdBtn.addEventListener('click', function () {
+      setIdBtn.addEventListener("click", function () {
         if (window.newspassid && window.newspassid.setID) {
-          const customId = 'custom-' + Math.random().toString(36).substring(2, 10);
+          const customId =
+            "custom-" + Math.random().toString(36).substring(2, 10);
           window.newspassid.setID(customId).then(function (id) {
             resultsEl.textContent = `New ID set: ${id}`;
             updateResults();
@@ -233,7 +238,7 @@
             });
           });
         } else {
-          resultsEl.textContent = 'NewsPassID not ready yet.';
+          resultsEl.textContent = "NewsPassID not ready yet.";
         }
       });
 
@@ -242,9 +247,9 @@
         if (window.newspassid) {
           const id = window.newspassid.getID();
           const segments = window.newspassid.getSegments();
-          resultsEl.textContent = 'Current State:\n\n';
-          resultsEl.textContent += `ID: ${id || 'No ID set'}\n`;
-          resultsEl.textContent += `Segments: ${segments.length ? segments.join(', ') : 'No segments'}`;
+          resultsEl.textContent = "Current State:\n\n";
+          resultsEl.textContent += `ID: ${id || "No ID set"}\n`;
+          resultsEl.textContent += `Segments: ${segments.length ? segments.join(", ") : "No segments"}`;
         }
       }
     </script>

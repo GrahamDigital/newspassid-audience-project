@@ -11,13 +11,15 @@
   "scripts": {
     "build:async-loader": "vite build --mode async",
     "build:library": "vite build",
-    "dev": "vite dev"
+    "dev": "vite serve",
+    "build": "npm run build:library && npm run build:async-loader"
   },
   "dependencies": {
     "@newspassid-audience/core": "*",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@types/node": "^22.9.0"
+    "@types/node": "^22.9.0",
+    "vite": "^5.0.0"
   }
 }

@@ -5,45 +5,45 @@
  * without blocking page rendering.
  */
 
-import { NewsPassConfig } from '../core/types';
+import type { NewsPassConfig } from "../core/types";
 
 // Retrieve configuration from global variable or use default
-const NEWSPASS_CONFIG: NewsPassConfig = (window as any).NEWSPASS_CONFIG || {
-  namespace: 'default-publisher',
-  lambdaEndpoint: 'https://npid.gmg.io/newspassid',
+const NEWSPASS_CONFIG: NewsPassConfig = window.NEWSPASS_CONFIG ?? {
+  namespace: "default-publisher",
+  lambdaEndpoint: "https://npid.gmg.io/newspassid",
 };
 
 // Initialize the queue and newspassid global object
-window.newspassid_q = window.newspassid_q || [];
-window.newspassid = window.newspassid || {
+window.newspassid_q = window.newspassid_q ?? [];
+window.newspassid = window.newspassid ?? {
   // Stub method that queues calls until the real implementation loads
-  setID: function (id?: string): Promise<string> {
-    window.newspassid_q!.push(['setID', id]);
-    return Promise.resolve(id || '');
+  setID(id?: string): Promise<string> {
+    window.newspassid_q!.push(["setID", id]);
+    return Promise.resolve(id ?? "");
   },
   // Other stub methods
-  getID: function (): null {
-    window.newspassid_q!.push(['getID']);
+  getID(): null {
+    window.newspassid_q!.push(["getID"]);
     return null;
   },
-  getSegments: function (): string[] {
-    window.newspassid_q!.push(['getSegments']);
+  getSegments(): string[] {
+    window.newspassid_q!.push(["getSegments"]);
     return [];
   },
-  getSegmentsAsKeyValue: function (): Record<string, string> {
-    window.newspassid_q!.push(['getSegmentsAsKeyValue']);
+  getSegmentsAsKeyValue(): Record<string, string> {
+    window.newspassid_q!.push(["getSegmentsAsKeyValue"]);
     return {};
   },
-  clearID: function (): void {
-    window.newspassid_q!.push(['clearID']);
+  clearID(): void {
+    window.newspassid_q!.push(["clearID"]);
   },
 };
 
 // Function to load the newspassid script
 (function () {
   // Create script element
-  const script = document.createElement('script');
-  script.src = 'http://localhost:3000/dist/newspassid.min.js';
+  const script = document.createElement("script");
+  script.src = "http://localhost:3000/newspassid.js";
   script.async = true;
 
   // Set up onload handler to initialize and process queue
@@ -52,12 +52,15 @@ window.newspassid = window.newspassid || {
     let createNewsPassIDFn;
 
     // Check for both ways the function might be exposed
-    if (typeof window.createNewsPassID === 'function') {
+    if (typeof window.createNewsPassID === "function") {
       createNewsPassIDFn = window.createNewsPassID;
-    } else if (window.NewsPassID && typeof window.NewsPassID.createNewsPassID === 'function') {
+    } else if (
+      window.NewsPassID &&
+      typeof window.NewsPassID.createNewsPassID === "function"
+    ) {
       createNewsPassIDFn = window.NewsPassID.createNewsPassID;
     } else {
-      console.error('newspassid: createNewsPassID function not found');
+      console.error("newspassid: createNewsPassID function not found");
       return;
     }
 
@@ -83,11 +86,12 @@ window.newspassid = window.newspassid || {
         const params = item.slice(1);
 
         // Execute the method if it exists
-        if (typeof realNewsPassID[method] === 'function') {
+        if (typeof realNewsPassID[method] === "function") {
           try {
-            (realNewsPassID[method] as Function).apply(realNewsPassID, params);
+            // realNewsPassID[method].apply(realNewsPassID, params);
+            void realNewsPassID[method](...params);
           } catch (e) {
-            console.error('newspassid: Error executing queued command', e);
+            console.error("newspassid: Error executing queued command", e);
           }
         }
       }
@@ -108,20 +112,20 @@ window.newspassid = window.newspassid || {
 
   // Handle script loading failure
   script.onerror = function () {
-    console.warn('newspassid: Failed to load script');
+    console.warn("newspassid: Failed to load script");
   };
 
   // Helper function to get stored ID from localStorage
   function getStoredId(): string | null {
     try {
-      return localStorage.getItem(NEWSPASS_CONFIG.storageKey || 'newspassid');
+      return localStorage.getItem(NEWSPASS_CONFIG.storageKey || "newspassid");
     } catch (e) {
       return null;
     }
   }
 
   // Add script to the document
-  const head = document.head || document.getElementsByTagName('head')[0];
+  const head = document.head || document.getElementsByTagName("head")[0];
   head.appendChild(script);
 
   // Set a flag to track initialization state

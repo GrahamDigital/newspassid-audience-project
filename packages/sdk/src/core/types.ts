@@ -7,29 +7,27 @@ export interface GPPData {
   gppString: string;
   applicableSections?: number[];
   gppVersion?: string;
-  sectionExist?: { [sectionName: string]: boolean };
+  sectionExist?: Record<string, boolean>;
 }
 
-export interface GPPCallback {
-  (data: GPPData | null, success: boolean): void;
-}
+export type GPPCallback = (data: GPPData | null, success: boolean) => void;
 
 export interface GPPPingResponse {
   gppVersion: string;
-  cmpStatus: 'loaded' | 'stub' | string;
-  cmpDisplayStatus: 'visible' | 'hidden' | 'disabled' | string;
+  cmpStatus: "loaded" | "stub" | string;
+  cmpDisplayStatus: "visible" | "hidden" | "disabled" | string;
   supportedAPIs: string[];
   cmpId?: number;
   cmpVersion?: number;
-  signalStatus?: 'ready' | 'not ready' | string;
+  signalStatus?: "ready" | "not ready" | string;
 }
 
 export interface GPP {
-  (command: 'ping', callback: (pingData: GPPPingResponse) => void): void;
-  (command: 'getGPPData', callback: GPPCallback): void;
+  (command: "ping", callback: (pingData: GPPPingResponse) => void): void;
+  (command: "getGPPData", callback: GPPCallback): void;
   (command: string, callback: GPPCallback, parameter?: unknown): void;
-  queue?: Array<[string, GPPCallback, unknown?]>;
-  events?: Array<[string, GPPCallback, unknown?]>;
+  queue?: [string, GPPCallback, unknown?][];
+  events?: [string, GPPCallback, unknown?][];
 }
 
 // NewsPassID specific types
@@ -66,9 +64,7 @@ export interface SegmentResponse {
 }
 
 // Segment types
-export interface SegmentKeyValue {
-  [key: string]: string;
-}
+export type SegmentKeyValue = Record<string, string>;
 
 // Main NewsPassID interface
 export interface NewsPassID {
@@ -84,8 +80,9 @@ declare global {
   interface Window {
     __gpp?: GPP;
     newspassid?: NewsPassID;
-    newspassid_q?: Array<[string, ...unknown[]]>;
+    newspassid_q?: [string, ...unknown[]][];
     newspass_segments?: string[];
+    NEWSPASS_CONFIG?: NewsPassConfig;
     createNewsPassID?: (config: NewsPassConfig) => NewsPassID;
     newspass_initialized?: boolean;
     googletag?: {
