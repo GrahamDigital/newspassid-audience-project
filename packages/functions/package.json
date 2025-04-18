@@ -1,0 +1,16 @@
+{
+  "name": "@newspassid-audience/functions",
+  "version": "0.0.0",
+  "type": "module",
+  "dependencies": {
+    "@aws-sdk/client-api-gateway": "^3.787.0",
+    "@aws-sdk/client-lambda": "^3.787.0",
+    "@aws-sdk/client-s3": "^3.787.0",
+    "@newspassid-audience/core": "*",
+    "csv-parse": "^5.6.0",
+    "sst": "*"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8"
+  }
+}
