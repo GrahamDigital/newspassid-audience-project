@@ -21,7 +21,7 @@ This will:
 3. Open the example page in your browser
 4. Watch for changes in the source files and rebuild automatically
 
-The dev server will automatically rebuild the library files when you make changes to the source code.
+The dev server will automatically rebuild the library files when you make changes to the source code and reload the page to reflect those changes.
 
 ## Building for Production
 

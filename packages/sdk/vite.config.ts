@@ -1,5 +1,10 @@
 import { defineConfig } from "vite";
 import { resolve } from "path";
+import { exec } from "child_process";
+import { promisify } from "util";
+import type { ViteDevServer } from "vite";
+
+const execAsync = promisify(exec);
 
 // Plugin to build both libraries before starting the dev server
 const buildLibrariesFirst = () => {
@@ -27,6 +32,49 @@ const buildLibrariesFirst = () => {
   };
 };
 
+// Plugin to watch for changes and rebuild libraries
+const watchAndRebuild = () => {
+  return {
+    name: "watch-and-rebuild",
+    configureServer: (server: ViteDevServer) => {
+      // Watch for changes in the src directory
+      const watcher = server.watcher;
+
+      // Add a watch on the src directory
+      watcher.add(resolve(__dirname, "src"));
+
+      // Listen for changes
+      watcher.on("change", (path: string) => {
+        // Only rebuild if the change is in the src directory
+        if (path.includes("/src/")) {
+          console.info(`Change detected in ${path}. Rebuilding libraries...`);
+
+          // Use void to handle the Promise
+          void (async () => {
+            try {
+              // Build the main library
+              await execAsync("npm run build:library");
+
+              // Build the async loader
+              await execAsync("npm run build:async-loader");
+
+              console.info("Libraries rebuilt successfully.");
+
+              // Notify the client to reload
+              server.ws.send({
+                type: "full-reload",
+                path: "*",
+              });
+            } catch (error) {
+              console.error("Error rebuilding libraries:", error);
+            }
+          })();
+        }
+      });
+    },
+  };
+};
+
 export default defineConfig(({ mode, command }) => {
   // Dev server configuration
   if (command === "serve") {
@@ -44,7 +92,7 @@ export default defineConfig(({ mode, command }) => {
           include: ["src/**"],
         },
       },
-      plugins: [buildLibrariesFirst()],
+      plugins: [buildLibrariesFirst(), watchAndRebuild()],
     };
   }
 
