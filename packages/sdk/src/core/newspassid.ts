@@ -21,11 +21,11 @@ class NewsPassIDImpl implements NewsPassID {
   constructor(config: NewsPassConfig) {
     this.config = {
       ...config,
-      storageKey: config.storageKey || "newspassid",
+      storageKey: config.storageKey ?? "newspassid",
       injectMetaTags: config.injectMetaTags !== false, // default to true
     };
 
-    console.log(`newspassid initialized with namespace: ${config.namespace}`);
+    console.info(`newspassid initialized with namespace: ${config.namespace}`);
   }
 
   /**
@@ -35,11 +35,12 @@ class NewsPassIDImpl implements NewsPassID {
    * @returns Promise resolving to the ID
    */
   async setID(id?: string, publisherSegments?: string[]): Promise<string> {
-    const storedId = getStoredId(this.config.storageKey!);
-    const useId = id || storedId || this.generateId();
+    const storageKey = this.config.storageKey ?? "newspassid";
+    const storedId = getStoredId(storageKey);
+    const useId = id ?? storedId ?? this.generateId();
 
     if (useId !== storedId) {
-      storeId(this.config.storageKey!, useId);
+      storeId(storageKey, useId);
 
       // Dispatch event to notify that ID has changed
       window.dispatchEvent(
@@ -52,7 +53,7 @@ class NewsPassIDImpl implements NewsPassID {
     // Get consent string
     try {
       this.consentString = await getGppConsentString();
-      console.log("newspassid: Consent string:", this.consentString);
+      console.info("newspassid: Consent string:", this.consentString);
     } catch (error) {
       console.warn("newspassid: Failed to get GPP consent:", error);
       this.consentString = "";
@@ -63,7 +64,7 @@ class NewsPassIDImpl implements NewsPassID {
       id: useId,
       timestamp: Date.now(),
       url: window.location.href,
-      consentString: this.consentString || "",
+      consentString: this.consentString ?? "",
       previousId: id && storedId && id !== storedId ? storedId : undefined,
       publisherSegments,
     };
@@ -72,10 +73,12 @@ class NewsPassIDImpl implements NewsPassID {
       const response = await sendToBackend(this.config.lambdaEndpoint, payload);
 
       // Set segments from response or use publisher segments if provided
-      if (response && response.segments) {
+      if (response && Array.isArray(response.segments)) {
         this.segments = response.segments;
-      } else if (publisherSegments) {
+      } else if (publisherSegments && Array.isArray(publisherSegments)) {
         this.segments = publisherSegments;
+      } else {
+        this.segments = [];
       }
 
       // Convert segments to key-value pairs
@@ -122,7 +125,8 @@ class NewsPassIDImpl implements NewsPassID {
    * Get the current NewsPassID
    */
   getID(): string | null {
-    return getStoredId(this.config.storageKey!);
+    const storageKey = this.config.storageKey ?? "newspassid";
+    return getStoredId(storageKey);
   }
 
   /**
@@ -144,11 +148,12 @@ class NewsPassIDImpl implements NewsPassID {
    */
   clearID(): void {
     try {
-      localStorage.removeItem(this.config.storageKey!);
+      const storageKey = this.config.storageKey ?? "newspassid";
+      localStorage.removeItem(storageKey);
       this.segments = [];
       this.segmentKeyValue = {};
       this.removeSegmentMetaTags();
-      console.log("newspassid: ID cleared successfully");
+      console.info("newspassid: ID cleared successfully");
     } catch (e) {
       console.warn("newspassid: Unable to remove from localStorage:", e);
     }

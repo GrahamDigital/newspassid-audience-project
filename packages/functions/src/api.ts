@@ -42,6 +42,7 @@ function getDomainFromUrl(url: string): string {
  * Reads and filters segments from a CSV file based on expiration timestamps.
  */
 async function getValidSegments(segmentsFile: string): Promise<string[]> {
+  console.log("[getValidSegments] segmentsFile", segmentsFile);
   try {
     const response = await s3.send(
       new GetObjectCommand({
@@ -59,6 +60,8 @@ async function getValidSegments(segmentsFile: string): Promise<string[]> {
       columns: true,
       skip_empty_lines: true,
     }) as SegmentRecord[];
+
+    console.log("[getValidSegments] records", records);
 
     const now = Date.now();
     return records
@@ -106,6 +109,8 @@ export const handler = async (
     }
 
     const data = JSON.parse(event.body) as LogRecord;
+
+    console.log("[handler] data", data);
 
     // Validate required fields
     if (!data.id || !data.timestamp || !data.url || !data.consentString) {
