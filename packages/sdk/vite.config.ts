@@ -1,28 +1,28 @@
 import { defineConfig } from "vite";
 import { resolve } from "path";
-import fs from "fs";
 
-// Log file sizes after build
-const logFileSizes = () => {
+// Plugin to build both libraries before starting the dev server
+const buildLibrariesFirst = () => {
   return {
-    name: "log-file-sizes",
-    closeBundle: () => {
-      console.info("\nOutput files:");
-      [
-        "newspassid.js",
-        "newspassid.esm.js",
-        "newspassid.min.js",
-        "newspassid-async.js",
-        "newspassid-async.min.js",
-      ].forEach((file) => {
-        try {
-          const size = (fs.statSync(`dist/${file}`).size / 1024).toFixed(1);
-          console.info(`- dist/${file} (${size}KB)`);
-        } catch {
-          // Skip files that don't exist yet
-          console.info(`- dist/${file} (not found)`);
-        }
+    name: "build-libraries-first",
+    configureServer: async () => {
+      // Build both libraries before starting the server
+      console.info("Building libraries before starting dev server...");
+
+      // Build the main library
+      const { build } = await import("vite");
+      await build({
+        configFile: resolve(__dirname, "vite.config.ts"),
+        mode: "development",
       });
+
+      // Build the async loader
+      await build({
+        configFile: resolve(__dirname, "vite.config.ts"),
+        mode: "async",
+      });
+
+      console.info("Libraries built successfully. Starting dev server...");
     },
   };
 };
@@ -44,7 +44,7 @@ export default defineConfig(({ mode, command }) => {
           include: ["src/**"],
         },
       },
-      plugins: [logFileSizes()],
+      plugins: [buildLibrariesFirst()],
     };
   }
 
@@ -63,7 +63,6 @@ export default defineConfig(({ mode, command }) => {
         emptyOutDir: false, // Don't clean the output directory
         minify: true,
       },
-      plugins: [logFileSizes()],
     };
   }
 
@@ -81,6 +80,5 @@ export default defineConfig(({ mode, command }) => {
       outDir: "dist",
       emptyOutDir: true, // Clean the output directory
     },
-    plugins: [logFileSizes()],
   };
 });

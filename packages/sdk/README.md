@@ -10,9 +10,6 @@ To run the example in development mode:
 # Install dependencies
 npm install
 
-# Build the library
-npm run build
-
 # Start the dev server
 npm run dev
 ```
@@ -23,6 +20,8 @@ This will:
 2. Start a dev server on port 3000
 3. Open the example page in your browser
 4. Watch for changes in the source files and rebuild automatically
+
+The dev server will automatically rebuild the library files when you make changes to the source code.
 
 ## Building for Production
 
