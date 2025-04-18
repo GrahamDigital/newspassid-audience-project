@@ -2,6 +2,17 @@
   "name": "@newspassid-audience/sdk",
   "version": "0.0.0",
   "type": "module",
+  "main": "dist/newspassid.js",
+  "module": "dist/newspassid.esm.js",
+  "types": "dist/newspassid.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build:async-loader": "vite build --mode async",
+    "build:library": "vite build",
+    "dev": "vite dev"
+  },
   "dependencies": {
     "@newspassid-audience/core": "*",
     "uuid": "^11.1.0"
