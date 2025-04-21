@@ -5,9 +5,22 @@
 
 declare module "sst" {
   export interface Resource {
+    "api": {
+      "name": string
+      "type": "sst.aws.Function"
+      "url": string
+    }
     "data": {
       "name": string
       "type": "sst.aws.Bucket"
+    }
+    "demo": {
+      "type": "sst.aws.StaticSite"
+      "url": string
+    }
+    "router": {
+      "type": "sst.aws.Router"
+      "url": string
     }
   }
 }

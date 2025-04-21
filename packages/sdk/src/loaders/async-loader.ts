@@ -50,6 +50,7 @@ window.newspassid_q = window.newspassid_q ?? [];
       : import.meta.env.VITE_STAGE === "dev"
         ? "https://dev.newspassid.com/newspassid.js"
         : "http://localhost:3000/newspassid.js";
+  script.type = "module";
   script.async = true;
 
   // Set up onload handler to initialize and process queue

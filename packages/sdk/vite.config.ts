@@ -97,6 +97,28 @@ export default defineConfig(({ mode, command }) => {
     };
   }
 
+  // Build configuration for the example site
+  if (mode === "examples") {
+    return {
+      base: "/examples/",
+      root: resolve(__dirname, "examples/basic"),
+      publicDir: resolve(__dirname, "dist"),
+      build: {
+        outDir: resolve(__dirname, "dist"),
+        emptyOutDir: false,
+      },
+      define: {
+        // Ensure environment variables are available during build
+        "import.meta.env.VITE_API_URL": JSON.stringify(
+          process.env.VITE_API_URL ?? "",
+        ),
+        "import.meta.env.VITE_STAGE": JSON.stringify(
+          process.env.VITE_STAGE ?? "",
+        ),
+      },
+    };
+  }
+
   // Determine build configuration based on mode
   if (mode === "async") {
     return {

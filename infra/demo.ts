@@ -3,6 +3,10 @@ import { router } from "./router";
 
 export const demo = new sst.aws.StaticSite("demo", {
   path: "packages/sdk/examples/basic",
+  build: {
+    command: "pnpm run build:examples",
+    output: "../../dist",
+  },
   router: {
     instance: router,
     path: "/examples",

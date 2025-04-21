@@ -13,6 +13,7 @@
     "build:library": "vite build",
     "dev": "vite serve",
     "build": "npm run build:library && npm run build:async-loader",
+    "build:examples": "vite build --mode examples",
     "predev": "npm run build"
   },
   "dependencies": {

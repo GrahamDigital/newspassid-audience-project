@@ -30,11 +30,14 @@
 
     <!-- NewsPassID Async Loader - Place as early as possible in the head -->
     <script type="module">
+      console.log("[ENV]", import.meta.env);
       // Publisher configuration
       window.NEWSPASS_CONFIG = {
         namespace: "gmg",
         // lambdaEndpoint: "https://npid.gmg.io/newspassid",
-        lambdaEndpoint: import.meta.env.VITE_API_URL.slice(0, -1),
+        lambdaEndpoint: import.meta.env.VITE_API_URL
+          ? import.meta.env.VITE_API_URL.slice(0, -1)
+          : "",
       };
 
       // Initialize the queue and NewsPassID global object
@@ -62,6 +65,7 @@
         // Create script element
         var script = document.createElement("script");
         script.src = "/newspassid-async.js"; // Use the correct path in development mode
+        script.type = "module";
         script.async = true;
 
         // Add script to the document
