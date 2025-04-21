@@ -1,16 +1,16 @@
 /**
  * NewsPassID main implementation
  */
+import { sendToBackend } from "../utils/network";
+import { generateId } from "../utils/random";
+import { getStoredId, storeId } from "../utils/storage";
+import { getGppConsentString } from "./gpp-api";
 import type {
-  NewsPassID,
-  NewsPassConfig,
   IdPayload,
+  NewsPassConfig,
+  NewsPassID,
   SegmentKeyValue,
 } from "./types";
-import { getGppConsentString } from "./gpp-api";
-import { getStoredId, storeId } from "../utils/storage";
-import { generateId } from "../utils/random";
-import { sendToBackend } from "../utils/network";
 
 class NewsPassIDImpl implements NewsPassID {
   private config: NewsPassConfig;
@@ -73,7 +73,7 @@ class NewsPassIDImpl implements NewsPassID {
       const response = await sendToBackend(this.config.lambdaEndpoint, payload);
 
       // Set segments from response or use publisher segments if provided
-      if (response && Array.isArray(response.segments)) {
+      if (Array.isArray(response.segments)) {
         this.segments = response.segments;
       } else if (publisherSegments && Array.isArray(publisherSegments)) {
         this.segments = publisherSegments;

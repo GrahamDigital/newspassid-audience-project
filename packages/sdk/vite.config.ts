@@ -1,7 +1,7 @@
-import { defineConfig } from "vite";
-import { resolve } from "path";
 import { exec } from "child_process";
+import { resolve } from "path";
 import { promisify } from "util";
+import { defineConfig } from "vite";
 import type { ViteDevServer } from "vite";
 
 const execAsync = promisify(exec);
@@ -79,6 +79,7 @@ export default defineConfig(({ mode, command }) => {
   // Dev server configuration
   if (command === "serve") {
     return {
+      base: "/examples/",
       root: resolve(__dirname, "examples/basic"),
       publicDir: resolve(__dirname, "dist"),
       server: {

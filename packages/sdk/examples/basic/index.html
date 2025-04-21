@@ -34,7 +34,7 @@
       window.NEWSPASS_CONFIG = {
         namespace: "gmg",
         // lambdaEndpoint: "https://npid.gmg.io/newspassid",
-        lambdaEndpoint: import.meta.env.VITE_PUBLIC_API_URL.slice(0, -1),
+        lambdaEndpoint: import.meta.env.VITE_API_URL.slice(0, -1),
       };
 
       // Initialize the queue and NewsPassID global object
