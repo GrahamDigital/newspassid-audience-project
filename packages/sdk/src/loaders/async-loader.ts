@@ -44,7 +44,13 @@ window.newspassid = window.newspassid ?? {
 (function () {
   // Create script element
   const script = document.createElement("script");
-  script.src = "http://localhost:3000/newspassid.js";
+  // script.src = "http://localhost:3000/newspassid.js";
+  script.src =
+    import.meta.env.VITE_PUBLIC_STAGE === "production"
+      ? "https://cdn.newspassid.com/newspassid.js"
+      : import.meta.env.VITE_PUBLIC_STAGE === "dev"
+        ? "https://dev.newspassid.com/newspassid.js"
+        : "http://localhost:3000/newspassid.js";
   script.async = true;
 
   // Set up onload handler to initialize and process queue

@@ -27,7 +27,7 @@ export default [
       parserOptions: {
         projectService: {
           allowDefaultProject: ["prettier.config.js"],
-          defaultProject: "tsconfig.eslint.json",
+          defaultProject: "tsconfig.json",
         },
         tsconfigRootDir: import.meta.dirname,
       },
