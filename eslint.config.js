@@ -27,7 +27,7 @@ export default [
       parserOptions: {
         projectService: {
           allowDefaultProject: ["prettier.config.js"],
-          defaultProject: "tsconfig.json",
+          defaultProject: "tsconfig.eslint.json",
         },
         tsconfigRootDir: import.meta.dirname,
       },
@@ -52,31 +52,6 @@ export default [
       "@typescript-eslint/consistent-type-imports": [
         "warn",
         { prefer: "type-imports", fixStyle: "separate-type-imports" },
-      ],
-      // TODO: This doesn't seem to work
-      // @see https://github.com/typescript-eslint/typescript-eslint/pull/10221
-      "@typescript-eslint/only-throw-error": [
-        "warn",
-        {
-          allow: [
-            {
-              from: "package",
-              name: "data",
-              package: "@remix-run/node",
-            },
-            {
-              from: "package",
-              name: "data",
-              package: "@remix-run/react",
-            },
-            {
-              from: "lib",
-              name: ["Response"],
-            },
-          ],
-          allowThrowingAny: false,
-          allowThrowingUnknown: false,
-        },
       ],
     },
   },

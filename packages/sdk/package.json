@@ -16,7 +16,7 @@
     "predev": "npm run build"
   },
   "dependencies": {
-    "@newspassid-audience/core": "*",
+    "@newspassid-audience/core": "workspace:*",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

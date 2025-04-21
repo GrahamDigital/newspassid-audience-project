@@ -6,11 +6,16 @@
     "@aws-sdk/client-api-gateway": "^3.787.0",
     "@aws-sdk/client-lambda": "^3.787.0",
     "@aws-sdk/client-s3": "^3.787.0",
-    "@newspassid-audience/core": "*",
+    "@hono/zod-validator": "^0.4.3",
+    "@newspassid-audience/core": "workspace:*",
     "csv-parse": "^5.6.0",
-    "sst": "*"
+    "hono": "^4.7.7",
+    "sst": "*",
+    "zod": "^3.24.3"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8"
+    "@types/aws-lambda": "^8",
+    "@types/node": "^22.14.1",
+    "typescript": "^5.8.3"
   }
 }

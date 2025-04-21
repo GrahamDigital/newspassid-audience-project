@@ -3,22 +3,32 @@ import {
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
-import { Resource } from "sst";
-import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { zValidator } from "@hono/zod-validator";
 import { parse } from "csv-parse/sync";
-import { getCorsHeaders } from "./utils";
+import { Hono } from "hono";
+import type { LambdaContext, LambdaEvent } from "hono/aws-lambda";
+import { handle } from "hono/aws-lambda";
+import { Resource } from "sst";
+import { z } from "zod";
+
+interface Bindings {
+  event: LambdaEvent;
+  lambdaContext: LambdaContext;
+}
 
 const s3 = new S3Client();
 const ID_FOLDER = process.env.ID_FOLDER ?? "newspassid";
 
-interface LogRecord {
-  id: string;
-  timestamp: number;
-  url: string;
-  consentString: string;
-  previousId?: string;
-  publisherSegments?: string[];
-}
+const logRecordSchema = z.object({
+  id: z.string(),
+  timestamp: z.number(),
+  url: z.string(),
+  consentString: z.string(),
+  previousId: z.string().optional(),
+  publisherSegments: z.array(z.string()).optional(),
+});
+
+// type LogRecord = z.infer<typeof logRecordSchema>;
 
 interface SegmentRecord {
   segments: string;
@@ -42,7 +52,7 @@ function getDomainFromUrl(url: string): string {
  * Reads and filters segments from a CSV file based on expiration timestamps.
  */
 async function getValidSegments(segmentsFile: string): Promise<string[]> {
-  console.log("[getValidSegments] segmentsFile", segmentsFile);
+  console.info("[getValidSegments] segmentsFile", segmentsFile);
   try {
     const response = await s3.send(
       new GetObjectCommand({
@@ -61,7 +71,7 @@ async function getValidSegments(segmentsFile: string): Promise<string[]> {
       skip_empty_lines: true,
     }) as SegmentRecord[];
 
-    console.log("[getValidSegments] records", records);
+    console.info("[getValidSegments] records", records);
 
     const now = Date.now();
     return records
@@ -91,50 +101,24 @@ function validateId(id: string): boolean {
   );
 }
 
-export const handler = async (
-  event: APIGatewayProxyEvent,
-): Promise<APIGatewayProxyResult> => {
-  // Handle CORS preflight
-  if (event.httpMethod === "OPTIONS") {
-    return {
-      statusCode: 200,
-      // headers: getCorsHeaders(event),
-      body: "",
-    };
-  }
+const app = new Hono<{ Bindings: Bindings }>();
 
+app.post("/", zValidator("json", logRecordSchema), async (c) => {
   try {
-    if (!event.body) {
-      throw new Error("Missing request body");
-    }
+    const data = c.req.valid("json");
+    // const data = await c.req.json();
 
-    const data = JSON.parse(event.body) as LogRecord;
-
-    console.log("[handler] data", data);
-
-    // Validate required fields
-    if (!data.id || !data.timestamp || !data.url || !data.consentString) {
-      return {
-        statusCode: 400,
-        // headers: getCorsHeaders(event),
-        body: JSON.stringify({
-          success: false,
-          error:
-            "Missing required fields. All requests must include id, timestamp, url, and consentString.",
-        }),
-      };
-    }
+    console.info("[handler] data", data);
 
     // Validate ID format
     if (!validateId(data.id)) {
-      return {
-        statusCode: 400,
-        // headers: getCorsHeaders(event),
-        body: JSON.stringify({
+      return c.json(
+        {
           success: false,
           error: "Invalid ID format",
-        }),
-      };
+        },
+        400,
+      );
     }
 
     // Get domain from URL
@@ -181,24 +165,21 @@ export const handler = async (
       );
     }
 
-    return {
-      statusCode: 200,
-      // headers: getCorsHeaders(event),
-      body: JSON.stringify({
-        success: true,
-        id: data.id,
-        segments: validSegments,
-      }),
-    };
+    return c.json({
+      success: true,
+      id: data.id,
+      segments: validSegments,
+    });
   } catch (error) {
     console.error("Error processing request:", error);
-    return {
-      statusCode: 500,
-      // headers: getCorsHeaders(event),
-      body: JSON.stringify({
+    return c.json(
+      {
         success: false,
         error: "Internal server error",
-      }),
-    };
+      },
+      500,
+    );
   }
-};
+});
+
+export const handler = handle(app);
