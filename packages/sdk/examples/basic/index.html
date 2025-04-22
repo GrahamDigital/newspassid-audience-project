@@ -36,7 +36,7 @@
         namespace: "gmg",
         // lambdaEndpoint: "https://npid.gmg.io/newspassid",
         lambdaEndpoint: import.meta.env.VITE_API_URL
-          ? import.meta.env.VITE_API_URL.slice(0, -1)
+          ? import.meta.env.VITE_API_URL
           : "",
       };
 

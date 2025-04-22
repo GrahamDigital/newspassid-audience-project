@@ -42,13 +42,15 @@ window.newspassid_q = window.newspassid_q ?? [];
 
 // Function to load the newspassid script
 (function () {
+  console.log("[ENV] async-loader", import.meta.env);
   // Create script element
   const script = document.createElement("script");
+  // TODO: I can't use env vars here because the script is loaded as a module
   script.src =
     import.meta.env.VITE_STAGE === "production"
-      ? "https://cdn.newspassid.com/newspassid.js"
+      ? "https://npid.gmg.io/examples/newspassid.js"
       : import.meta.env.VITE_STAGE === "dev"
-        ? "https://dev.newspassid.com/newspassid.js"
+        ? "https://dev-npid.gmg.io/newspassid.js"
         : "http://localhost:3000/newspassid.js";
   script.type = "module";
   script.async = true;

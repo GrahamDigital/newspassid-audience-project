@@ -12,9 +12,9 @@
     "build:async-loader": "vite build --mode async",
     "build:library": "vite build",
     "dev": "vite serve",
-    "build": "npm run build:library && npm run build:async-loader",
+    "build": "pnpm run build:library && pnpm run build:async-loader && pnpm run build:examples",
     "build:examples": "vite build --mode examples",
-    "predev": "npm run build"
+    "predev": "pnpm run build"
   },
   "dependencies": {
     "@newspassid-audience/core": "workspace:*",

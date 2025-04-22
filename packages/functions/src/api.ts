@@ -103,7 +103,7 @@ function validateId(id: string): boolean {
 
 const app = new Hono<{ Bindings: Bindings }>();
 
-app.post("/", zValidator("json", logRecordSchema), async (c) => {
+app.post("/newspassid", zValidator("json", logRecordSchema), async (c) => {
   try {
     const data = c.req.valid("json");
     // const data = await c.req.json();

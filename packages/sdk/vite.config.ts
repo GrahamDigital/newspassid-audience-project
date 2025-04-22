@@ -107,15 +107,6 @@ export default defineConfig(({ mode, command }) => {
         outDir: resolve(__dirname, "dist"),
         emptyOutDir: false,
       },
-      define: {
-        // Ensure environment variables are available during build
-        "import.meta.env.VITE_API_URL": JSON.stringify(
-          process.env.VITE_API_URL ?? "",
-        ),
-        "import.meta.env.VITE_STAGE": JSON.stringify(
-          process.env.VITE_STAGE ?? "",
-        ),
-      },
     };
   }
 
