@@ -17,6 +17,6 @@
     },
     "types": ["vite/client"]
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "../../reset.d.ts"],
   "exclude": ["node_modules", "dist"]
 }
