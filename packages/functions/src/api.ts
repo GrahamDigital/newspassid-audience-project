@@ -101,86 +101,88 @@ function validateId(id: string): boolean {
   );
 }
 
-const app = new Hono<{ Bindings: Bindings }>();
+const app = new Hono<{ Bindings: Bindings }>().post(
+  "/newspassid",
+  zValidator("json", logRecordSchema),
+  async (c) => {
+    try {
+      const data = c.req.valid("json");
+      // const data = await c.req.json();
 
-app.post("/newspassid", zValidator("json", logRecordSchema), async (c) => {
-  try {
-    const data = c.req.valid("json");
-    // const data = await c.req.json();
+      console.info("[handler] data", data);
 
-    console.info("[handler] data", data);
+      // Validate ID format
+      if (!validateId(data.id)) {
+        return c.json(
+          {
+            success: false,
+            error: "Invalid ID format",
+          },
+          400,
+        );
+      }
 
-    // Validate ID format
-    if (!validateId(data.id)) {
-      return c.json(
-        {
-          success: false,
-          error: "Invalid ID format",
-        },
-        400,
-      );
-    }
+      // Get domain from URL
+      const domain = getDomainFromUrl(data.url);
 
-    // Get domain from URL
-    const domain = getDomainFromUrl(data.url);
+      // Get valid segments
+      const segmentsFile = `${ID_FOLDER}/segments.csv`;
+      const validSegments = await getValidSegments(segmentsFile);
 
-    // Get valid segments
-    const segmentsFile = `${ID_FOLDER}/segments.csv`;
-    const validSegments = await getValidSegments(segmentsFile);
-
-    // Prepare CSV content
-    const csvContent = [
-      "id,timestamp,url,consentString,previousId,segments,publisherSegments",
-      `"${data.id}","${data.timestamp}","${data.url}","${
-        data.consentString
-      }","${data.previousId ?? ""}","${validSegments.join(",")}","${
-        data.publisherSegments?.join("|") ?? ""
-      }"`,
-    ].join("\n");
-
-    // Upload to S3
-    await s3.send(
-      new PutObjectCommand({
-        Bucket: Resource.data.name,
-        Key: `${ID_FOLDER}/publisher/${domain}/${data.id}/${data.timestamp}.csv`,
-        ContentType: "text/csv",
-        Body: csvContent,
-      }),
-    );
-
-    // If there's a previous ID, create a mapping
-    if (data.previousId) {
-      const mappingContent = [
-        "oldId,newId,timestamp",
-        `"${data.previousId}","${data.id}",${data.timestamp}`,
+      // Prepare CSV content
+      const csvContent = [
+        "id,timestamp,url,consentString,previousId,segments,publisherSegments",
+        `"${data.id}","${data.timestamp}","${data.url}","${
+          data.consentString
+        }","${data.previousId ?? ""}","${validSegments.join(",")}","${
+          data.publisherSegments?.join("|") ?? ""
+        }"`,
       ].join("\n");
 
+      // Upload to S3
       await s3.send(
         new PutObjectCommand({
           Bucket: Resource.data.name,
-          Key: `${ID_FOLDER}/publisher/mappings/${data.previousId}.csv`,
+          Key: `${ID_FOLDER}/publisher/${domain}/${data.id}/${data.timestamp}.csv`,
           ContentType: "text/csv",
-          Body: mappingContent,
+          Body: csvContent,
         }),
       );
-    }
 
-    return c.json({
-      success: true,
-      id: data.id,
-      segments: validSegments,
-    });
-  } catch (error) {
-    console.error("Error processing request:", error);
-    return c.json(
-      {
-        success: false,
-        error: "Internal server error",
-      },
-      500,
-    );
-  }
-});
+      // If there's a previous ID, create a mapping
+      if (data.previousId) {
+        const mappingContent = [
+          "oldId,newId,timestamp",
+          `"${data.previousId}","${data.id}",${data.timestamp}`,
+        ].join("\n");
+
+        await s3.send(
+          new PutObjectCommand({
+            Bucket: Resource.data.name,
+            Key: `${ID_FOLDER}/publisher/mappings/${data.previousId}.csv`,
+            ContentType: "text/csv",
+            Body: mappingContent,
+          }),
+        );
+      }
+
+      return c.json({
+        success: true,
+        id: data.id,
+        segments: validSegments,
+      });
+    } catch (error) {
+      console.error("Error processing request:", error);
+      return c.json(
+        {
+          success: false,
+          error: "Internal server error",
+        },
+        500,
+      );
+    }
+  },
+);
 
 export const handler = handle(app);
 export { app };
