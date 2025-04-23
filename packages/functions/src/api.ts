@@ -183,3 +183,4 @@ app.post("/newspassid", zValidator("json", logRecordSchema), async (c) => {
 });
 
 export const handler = handle(app);
+export { app };
