@@ -14,7 +14,8 @@
     "dev": "vite serve",
     "build": "pnpm run build:library && pnpm run build:async-loader && pnpm run build:examples",
     "build:examples": "vite build --mode examples",
-    "predev": "pnpm run build"
+    "predev": "pnpm run build",
+    "test": "vitest"
   },
   "dependencies": {
     "@newspassid-audience/core": "workspace:*",
@@ -22,6 +23,8 @@
   },
   "devDependencies": {
     "@types/node": "^22.9.0",
-    "vite": "^5.0.0"
+    "happy-dom": "^17.4.4",
+    "vite": "^6.3.2",
+    "vitest": "^3.1.2"
   }
 }
