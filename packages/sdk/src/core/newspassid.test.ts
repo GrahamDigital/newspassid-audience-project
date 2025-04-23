@@ -266,10 +266,10 @@ describe("NewsPassID Advanced Features", () => {
     expect(mockWindow.dispatchEvent).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "newspassid:change",
-        detail: "test-id",
-        // detail: expect.objectContaining({
-        //   id: "test-id",
-        // }),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        detail: expect.objectContaining({
+          id: "test-id",
+        }),
       }),
     );
   });
