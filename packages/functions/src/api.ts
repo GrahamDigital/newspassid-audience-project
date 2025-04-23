@@ -10,6 +10,7 @@ import type { LambdaContext, LambdaEvent } from "hono/aws-lambda";
 import { handle } from "hono/aws-lambda";
 import { Resource } from "sst";
 import { z } from "zod";
+import { isValidId } from "./lib/utils";
 
 interface Bindings {
   event: LambdaEvent;
@@ -95,12 +96,6 @@ async function getValidSegments(segmentsFile: string): Promise<string[]> {
   }
 }
 
-function validateId(id: string): boolean {
-  return /^gmg-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-    id,
-  );
-}
-
 const app = new Hono<{ Bindings: Bindings }>().post(
   "/newspassid",
   zValidator("json", logRecordSchema),
@@ -112,7 +107,8 @@ const app = new Hono<{ Bindings: Bindings }>().post(
       console.info("[handler] data", data);
 
       // Validate ID format
-      if (!validateId(data.id)) {
+      // if (!validateId(data.id)) {
+      if (!isValidId(data.id)) {
         return c.json(
           {
             success: false,
