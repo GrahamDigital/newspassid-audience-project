@@ -16,29 +16,6 @@ const NEWSPASS_CONFIG: NewsPassConfig = window.NEWSPASS_CONFIG ?? {
 
 // Initialize the queue and newspassid global object
 window.newspassid_q = window.newspassid_q ?? [];
-// window.newspassid = window.newspassid ?? {
-//   // Stub method that queues calls until the real implementation loads
-//   setID(id?: string): Promise<string> {
-//     window.newspassid_q!.push(["setID", id]);
-//     return Promise.resolve(id ?? "");
-//   },
-//   // Other stub methods
-//   getID(): null {
-//     window.newspassid_q!.push(["getID"]);
-//     return null;
-//   },
-//   getSegments(): string[] {
-//     window.newspassid_q!.push(["getSegments"]);
-//     return [];
-//   },
-//   getSegmentsAsKeyValue(): Record<string, string> {
-//     window.newspassid_q!.push(["getSegmentsAsKeyValue"]);
-//     return {};
-//   },
-//   clearID(): void {
-//     window.newspassid_q!.push(["clearID"]);
-//   },
-// };
 
 // Function to load the newspassid script
 (function () {

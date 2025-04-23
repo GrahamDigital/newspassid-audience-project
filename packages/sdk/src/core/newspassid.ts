@@ -37,15 +37,15 @@ class NewsPassIDImpl implements NewsPassID {
   async setID(id?: string, publisherSegments?: string[]): Promise<string> {
     const storageKey = this.config.storageKey ?? "newspassid";
     const storedId = getStoredId(storageKey);
-    const useId = id ?? storedId ?? this.generateId();
+    const userId = id ?? storedId ?? this.generateId();
 
-    if (useId !== storedId) {
-      storeId(storageKey, useId);
+    if (userId !== storedId) {
+      storeId(storageKey, userId);
 
       // Dispatch event to notify that ID has changed
       window.dispatchEvent(
         new CustomEvent("newspassid:change", {
-          detail: { id: useId },
+          detail: { id: userId },
         }),
       );
     }
@@ -61,7 +61,7 @@ class NewsPassIDImpl implements NewsPassID {
 
     // Create payload for backend
     const payload: IdPayload = {
-      id: useId,
+      id: userId,
       timestamp: Date.now(),
       url: window.location.href,
       consentString: this.consentString ?? "",
@@ -118,7 +118,7 @@ class NewsPassIDImpl implements NewsPassID {
       }
     }
 
-    return useId;
+    return userId;
   }
 
   /**
@@ -250,7 +250,3 @@ class NewsPassIDImpl implements NewsPassID {
 export function createNewsPassID(config: NewsPassConfig): NewsPassID {
   return new NewsPassIDImpl(config);
 }
-
-export default {
-  createNewsPassID,
-};
