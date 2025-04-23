@@ -1,16 +1,16 @@
 /**
  * NewsPassID main implementation
  */
+import { sendToBackend } from "../utils/network";
+import { generateId } from "../utils/random";
+import { getStoredId, storeId } from "../utils/storage";
+import { getGppConsentString } from "./gpp-api";
 import type {
-  NewsPassID,
-  NewsPassConfig,
   IdPayload,
+  NewsPassConfig,
+  NewsPassID,
   SegmentKeyValue,
 } from "./types";
-import { getGppConsentString } from "./gpp-api";
-import { getStoredId, storeId } from "../utils/storage";
-import { generateId } from "../utils/random";
-import { sendToBackend } from "../utils/network";
 
 class NewsPassIDImpl implements NewsPassID {
   private config: NewsPassConfig;
@@ -37,15 +37,15 @@ class NewsPassIDImpl implements NewsPassID {
   async setID(id?: string, publisherSegments?: string[]): Promise<string> {
     const storageKey = this.config.storageKey ?? "newspassid";
     const storedId = getStoredId(storageKey);
-    const useId = id ?? storedId ?? this.generateId();
+    const userId = id ?? storedId ?? this.generateId();
 
-    if (useId !== storedId) {
-      storeId(storageKey, useId);
+    if (userId !== storedId) {
+      storeId(storageKey, userId);
 
       // Dispatch event to notify that ID has changed
       window.dispatchEvent(
         new CustomEvent("newspassid:change", {
-          detail: { id: useId },
+          detail: { id: userId },
         }),
       );
     }
@@ -61,7 +61,7 @@ class NewsPassIDImpl implements NewsPassID {
 
     // Create payload for backend
     const payload: IdPayload = {
-      id: useId,
+      id: userId,
       timestamp: Date.now(),
       url: window.location.href,
       consentString: this.consentString ?? "",
@@ -73,7 +73,7 @@ class NewsPassIDImpl implements NewsPassID {
       const response = await sendToBackend(this.config.lambdaEndpoint, payload);
 
       // Set segments from response or use publisher segments if provided
-      if (response && Array.isArray(response.segments)) {
+      if (Array.isArray(response.segments)) {
         this.segments = response.segments;
       } else if (publisherSegments && Array.isArray(publisherSegments)) {
         this.segments = publisherSegments;
@@ -118,7 +118,7 @@ class NewsPassIDImpl implements NewsPassID {
       }
     }
 
-    return useId;
+    return userId;
   }
 
   /**
@@ -250,7 +250,3 @@ class NewsPassIDImpl implements NewsPassID {
 export function createNewsPassID(config: NewsPassConfig): NewsPassID {
   return new NewsPassIDImpl(config);
 }
-
-export default {
-  createNewsPassID,
-};

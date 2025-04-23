@@ -1,7 +1,16 @@
 {
   "extends": "@tsconfig/node22/tsconfig.json",
   "compilerOptions": {
+    "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "Bundler"
-  }
+    "moduleResolution": "Bundler",
+    "types": ["node"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "include": ["../../reset.d.ts"]
 }

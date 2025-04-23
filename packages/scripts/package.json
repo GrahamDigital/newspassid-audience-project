@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "type": "module",
   "dependencies": {
-    "@newspassid-audience/core": "*",
+    "@newspassid-audience/core": "workspace:*",
     "sst": "*"
   },
   "scripts": {

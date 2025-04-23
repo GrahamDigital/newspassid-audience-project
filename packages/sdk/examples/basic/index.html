@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>NewsPassID Basic Example</title>
 
+    <!-- <script src="/newspassid-async.js" type="module" async></script> -->
     <!-- Google Ad Manager -->
     <script
       async
@@ -30,47 +31,30 @@
 
     <!-- NewsPassID Async Loader - Place as early as possible in the head -->
     <script type="module">
+      // Function to load the NewsPassID script
+      // Create script element
+      const script = document.createElement("script");
+      script.src = "/examples/newspassid-async.js"; // Use the correct path in development mode
+      script.type = "module";
+      script.async = true;
+
+      // Add script to the document
+      const head = document.head || document.getElementsByTagName("head")[0];
+      head.appendChild(script);
+
+      console.log("[ENV]", import.meta.env);
       // Publisher configuration
       window.NEWSPASS_CONFIG = {
         namespace: "gmg",
-        // lambdaEndpoint: "https://npid.gmg.io/newspassid",
-        lambdaEndpoint: import.meta.env.VITE_PUBLIC_API_URL.slice(0, -1),
+        lambdaEndpoint: ["production", "dev"].includes(
+          import.meta.env.VITE_STAGE,
+        )
+          ? import.meta.env.VITE_API_URL
+          : `${import.meta.env.VITE_API_URL}newspassid`,
       };
 
       // Initialize the queue and NewsPassID global object
       window.NewsPassIDQ = window.NewsPassIDQ || [];
-      window.newspassid = window.newspassid || {
-        // Stub method that queues calls until the real implementation loads
-        setID: function (id) {
-          window.NewsPassIDQ.push(["setID", id]);
-        },
-        getID: function () {
-          window.NewsPassIDQ.push(["getID"]);
-          return null;
-        },
-        getSegments: function () {
-          window.NewsPassIDQ.push(["getSegments"]);
-          return [];
-        },
-        clearID: function () {
-          window.NewsPassIDQ.push(["clearID"]);
-        },
-      };
-
-      // Function to load the NewsPassID script
-      (function () {
-        // Create script element
-        var script = document.createElement("script");
-        script.src = "/newspassid-async.js"; // Use the correct path in development mode
-        script.async = true;
-
-        // Add script to the document
-        const head = document.head || document.getElementsByTagName("head")[0];
-        head.appendChild(script);
-
-        // Set a flag to track initialization state
-        window.newspassInitialized = false;
-      })();
     </script>
 
     <!-- Other head elements -->
@@ -185,10 +169,11 @@
           const id = window.newspassid.getID();
           if (id) {
             statusEl.textContent = "NewsPassID is active.";
+            resultsEl.textContent = `Current ID: ${id}`;
             clearInterval(checkInterval);
           }
         }
-      }, 1000);
+      }, 250);
 
       // Button event handlers
       getIdBtn.addEventListener("click", function () {
@@ -227,9 +212,9 @@
 
       setIdBtn.addEventListener("click", function () {
         if (window.newspassid && window.newspassid.setID) {
-          const customId =
-            "custom-" + Math.random().toString(36).substring(2, 10);
-          window.newspassid.setID(customId).then(function (id) {
+          // const customId = "gmg-" + Math.random().toString(36).substring(2, 10);
+          const newId = window.newspassid.generateId();
+          window.newspassid.setID(newId).then(function (id) {
             resultsEl.textContent = `New ID set: ${id}`;
             updateResults();
 
