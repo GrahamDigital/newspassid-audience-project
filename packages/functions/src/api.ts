@@ -10,6 +10,7 @@ import type { LambdaContext, LambdaEvent } from "hono/aws-lambda";
 import { handle } from "hono/aws-lambda";
 import { Resource } from "sst";
 import { z } from "zod";
+import { isValidId } from "./lib/utils";
 
 interface Bindings {
   event: LambdaEvent;
@@ -95,91 +96,89 @@ async function getValidSegments(segmentsFile: string): Promise<string[]> {
   }
 }
 
-function validateId(id: string): boolean {
-  return /^gmg-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-    id,
-  );
-}
+const app = new Hono<{ Bindings: Bindings }>().post(
+  "/newspassid",
+  zValidator("json", logRecordSchema),
+  async (c) => {
+    try {
+      const data = c.req.valid("json");
+      // const data = await c.req.json();
 
-const app = new Hono<{ Bindings: Bindings }>();
+      console.info("[handler] data", data);
 
-app.post("/newspassid", zValidator("json", logRecordSchema), async (c) => {
-  try {
-    const data = c.req.valid("json");
-    // const data = await c.req.json();
+      // Validate ID format
+      // if (!validateId(data.id)) {
+      if (!isValidId(data.id)) {
+        return c.json(
+          {
+            success: false,
+            error: "Invalid ID format",
+          },
+          400,
+        );
+      }
 
-    console.info("[handler] data", data);
+      // Get domain from URL
+      const domain = getDomainFromUrl(data.url);
 
-    // Validate ID format
-    if (!validateId(data.id)) {
-      return c.json(
-        {
-          success: false,
-          error: "Invalid ID format",
-        },
-        400,
-      );
-    }
+      // Get valid segments
+      const segmentsFile = `${ID_FOLDER}/segments.csv`;
+      const validSegments = await getValidSegments(segmentsFile);
 
-    // Get domain from URL
-    const domain = getDomainFromUrl(data.url);
-
-    // Get valid segments
-    const segmentsFile = `${ID_FOLDER}/segments.csv`;
-    const validSegments = await getValidSegments(segmentsFile);
-
-    // Prepare CSV content
-    const csvContent = [
-      "id,timestamp,url,consentString,previousId,segments,publisherSegments",
-      `"${data.id}","${data.timestamp}","${data.url}","${
-        data.consentString
-      }","${data.previousId ?? ""}","${validSegments.join(",")}","${
-        data.publisherSegments?.join("|") ?? ""
-      }"`,
-    ].join("\n");
-
-    // Upload to S3
-    await s3.send(
-      new PutObjectCommand({
-        Bucket: Resource.data.name,
-        Key: `${ID_FOLDER}/publisher/${domain}/${data.id}/${data.timestamp}.csv`,
-        ContentType: "text/csv",
-        Body: csvContent,
-      }),
-    );
-
-    // If there's a previous ID, create a mapping
-    if (data.previousId) {
-      const mappingContent = [
-        "oldId,newId,timestamp",
-        `"${data.previousId}","${data.id}",${data.timestamp}`,
+      // Prepare CSV content
+      const csvContent = [
+        "id,timestamp,url,consentString,previousId,segments,publisherSegments",
+        `"${data.id}","${data.timestamp}","${data.url}","${
+          data.consentString
+        }","${data.previousId ?? ""}","${validSegments.join(",")}","${
+          data.publisherSegments?.join("|") ?? ""
+        }"`,
       ].join("\n");
 
+      // Upload to S3
       await s3.send(
         new PutObjectCommand({
           Bucket: Resource.data.name,
-          Key: `${ID_FOLDER}/publisher/mappings/${data.previousId}.csv`,
+          Key: `${ID_FOLDER}/publisher/${domain}/${data.id}/${data.timestamp}.csv`,
           ContentType: "text/csv",
-          Body: mappingContent,
+          Body: csvContent,
         }),
       );
-    }
 
-    return c.json({
-      success: true,
-      id: data.id,
-      segments: validSegments,
-    });
-  } catch (error) {
-    console.error("Error processing request:", error);
-    return c.json(
-      {
-        success: false,
-        error: "Internal server error",
-      },
-      500,
-    );
-  }
-});
+      // If there's a previous ID, create a mapping
+      if (data.previousId) {
+        const mappingContent = [
+          "oldId,newId,timestamp",
+          `"${data.previousId}","${data.id}",${data.timestamp}`,
+        ].join("\n");
+
+        await s3.send(
+          new PutObjectCommand({
+            Bucket: Resource.data.name,
+            Key: `${ID_FOLDER}/publisher/mappings/${data.previousId}.csv`,
+            ContentType: "text/csv",
+            Body: mappingContent,
+          }),
+        );
+      }
+
+      return c.json({
+        success: true,
+        id: data.id,
+        segments: validSegments,
+      });
+    } catch (error) {
+      console.error("Error processing request:", error);
+      return c.json(
+        {
+          success: false,
+          error: "Internal server error",
+        },
+        500,
+      );
+    }
+  },
+);
 
 export const handler = handle(app);
+export { app };

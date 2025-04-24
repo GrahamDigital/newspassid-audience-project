@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "test": "sst shell vitest"
+    "test": "vitest"
   },
   "dependencies": {
     "@aws-sdk/client-api-gateway": "^3.787.0",

@@ -1,4 +1,5 @@
 import type { APIGatewayProxyEvent } from "aws-lambda";
+import { z } from "zod";
 
 /**
  * Get CORS headers for the response
@@ -30,13 +31,18 @@ export function errorResponse(statusCode: number, message: string) {
 }
 
 /**
+ * Validate ID format: <publisher>-<uuid>
+ */
+const publisherUuidRegex =
+  /^[a-zA-Z0-9]+-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+const publisherUuidSchema = z.string().regex(publisherUuidRegex);
+
+/**
  * Validate ID format
  */
 export function isValidId(id: string): boolean {
-  if (!id || typeof id !== "string") return false;
-  // ID should be in format: namespace-id
-  const parts = id.split("-");
-  return parts.length === 2 && parts[0].length > 0 && parts[1].length > 0;
+  return publisherUuidSchema.safeParse(id).success;
 }
 
 /**
