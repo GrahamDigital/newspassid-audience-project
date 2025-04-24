@@ -8,6 +8,7 @@ import { parse } from "csv-parse/sync";
 import { Hono } from "hono";
 import type { LambdaContext, LambdaEvent } from "hono/aws-lambda";
 import { handle } from "hono/aws-lambda";
+import { cors } from "hono/cors";
 import { Resource } from "sst";
 import { z } from "zod";
 import { isValidId } from "./lib/utils";
@@ -96,10 +97,25 @@ async function getValidSegments(segmentsFile: string): Promise<string[]> {
   }
 }
 
-const app = new Hono<{ Bindings: Bindings }>().post(
-  "/newspassid",
-  zValidator("json", logRecordSchema),
-  async (c) => {
+const app = new Hono<{ Bindings: Bindings }>()
+  .use(
+    cors({
+      origin: [
+        "http://localhost:3000",
+        "https://*.gmg.io",
+        "https://www.clickondetroit.com",
+        "https://www.ksat.com",
+        "https://www.click2houston.com",
+        "https://www.wsls.com",
+        "https://www.news4jax.com",
+        "https://www.clickorlando.com",
+      ],
+      allowMethods: ["POST", "OPTIONS"],
+      allowHeaders: ["Content-Type", "Authorization"],
+      credentials: true,
+    }),
+  )
+  .post("/newspassid", zValidator("json", logRecordSchema), async (c) => {
     try {
       const data = c.req.valid("json");
       // const data = await c.req.json();
@@ -107,7 +123,6 @@ const app = new Hono<{ Bindings: Bindings }>().post(
       console.info("[handler] data", data);
 
       // Validate ID format
-      // if (!validateId(data.id)) {
       if (!isValidId(data.id)) {
         return c.json(
           {
@@ -177,8 +192,7 @@ const app = new Hono<{ Bindings: Bindings }>().post(
         500,
       );
     }
-  },
-);
+  });
 
 export const handler = handle(app);
 export { app };

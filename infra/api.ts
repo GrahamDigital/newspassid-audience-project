@@ -12,9 +12,14 @@ export const api = new sst.aws.Function("api", {
             instance: router,
             path: "/newspassid",
           },
+          cors: false,
         },
       }
-    : { url: true }),
+    : {
+        url: {
+          cors: false,
+        },
+      }),
   environment: {
     ID_FOLDER: "newspassid",
   },
