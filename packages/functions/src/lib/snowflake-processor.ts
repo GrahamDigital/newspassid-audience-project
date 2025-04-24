@@ -139,7 +139,8 @@ class SnowflakeProcessor {
         },
       });
 
-      const rows = statement.fetchRows();
+      const rows = statement.fetchRows({ start: 0, end: 10 });
+      console.log("[getPublisherData] rows", rows);
       if (rows) {
         const result = await new Promise<SnowflakeRow[]>((resolve) => {
           const data: SnowflakeRow[] = [];
@@ -254,21 +255,25 @@ class SnowflakeProcessor {
         console.log("[writeToSnowflake] record", record);
         this.connection.execute({
           sqlText: `
-                        USE DATABASE ${Resource.SNOWFLAKE_DATABASE.value};
-                        INSERT INTO enhanced_user_data (
-                            newspass_id, timestamp, url, domain, publisher,
-                            has_gdpr_consent, has_ccpa_consent, has_us_virginia_consent,
-                            has_us_colorado_consent, has_us_connecticut_consent, has_us_utah_consent,
-                            subscription_status, registration_date, last_login_date,
-                            user_segment, raw_segments, processed_at
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, PARSE_JSON(?), ?)
+                      USE DATABASE ${Resource.SNOWFLAKE_DATABASE.value};
+                      USE WAREHOUSE ${Resource.SNOWFLAKE_WAREHOUSE.value};
+                      INSERT INTO enhanced_user_data (
+                          newspass_id, timestamp, url, domain, publisher,
+                          has_gdpr_consent, has_ccpa_consent, has_us_virginia_consent,
+                          has_us_colorado_consent, has_us_connecticut_consent, has_us_utah_consent,
+                          subscription_status, registration_date, last_login_date,
+                          user_segment, raw_segments, processed_at
+                      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, PARSE_JSON(?), ?)
                     `,
+          parameters: {
+            MULTI_STATEMENT_COUNT: 3,
+          },
           binds: [
             record.newspass_id,
             record.timestamp,
             record.url,
-            record.domain,
-            record.publisher,
+            record.domain ?? null,
+            record.publisher ?? null,
             record.has_gdpr_consent,
             record.has_ccpa_consent,
             record.has_us_virginia_consent,
