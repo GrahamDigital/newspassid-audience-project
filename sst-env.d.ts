@@ -5,6 +5,30 @@
 
 declare module "sst" {
   export interface Resource {
+    "SNOWFLAKE_ACCOUNT": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "SNOWFLAKE_DATABASE": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "SNOWFLAKE_PASSWORD": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "SNOWFLAKE_SCHEMA": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "SNOWFLAKE_USER": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "SNOWFLAKE_WAREHOUSE": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "api": {
       "name": string
       "type": "sst.aws.Function"
@@ -18,12 +42,13 @@ declare module "sst" {
       "type": "sst.aws.StaticSite"
       "url": string
     }
-    "processor": {
-      "name": string
-      "type": "sst.aws.Function"
-    }
     "router": {
       "type": "sst.aws.Router"
+      "url": string
+    }
+    "snowflake-processor": {
+      "name": string
+      "type": "sst.aws.Function"
       "url": string
     }
   }
