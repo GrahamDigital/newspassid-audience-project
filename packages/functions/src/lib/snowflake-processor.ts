@@ -1,5 +1,11 @@
+// import AWS from "aws-sdk";
+import {
+  GetObjectCommand,
+  ListObjectsV2Command,
+  ListObjectsV2CommandInput,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import type { APIGatewayProxyResult } from "aws-lambda";
-import AWS from "aws-sdk";
 import { parse } from "csv-parse/sync";
 import * as snowflake from "snowflake-sdk";
 
@@ -40,13 +46,13 @@ interface EnhancedRecord extends LogRecord, GppSignals, PublisherData {
 type SnowflakeRow = Record<number, string | Date | null>;
 
 class SnowflakeProcessor {
-  private s3: AWS.S3;
+  private s3: S3Client;
   private bucket: string;
   protected connection: snowflake.Connection;
   private gppSignalMap: GppSignalMap;
 
   constructor() {
-    this.s3 = new AWS.S3();
+    this.s3 = new S3Client();
     this.bucket = process.env.STORAGE_BUCKET || "";
 
     this.connection = snowflake.createConnection({
@@ -70,7 +76,7 @@ class SnowflakeProcessor {
 
   async connect(): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.connection.connect((err: snowflake.SnowflakeError | undefined) => {
+      this.connection.connect((err) => {
         if (err) reject(err);
         else resolve();
       });
@@ -143,14 +149,18 @@ class SnowflakeProcessor {
 
   private async processLogFile(key: string): Promise<EnhancedRecord[]> {
     try {
-      const response = await this.s3
-        .getObject({
+      const response = await this.s3.send(
+        new GetObjectCommand({
           Bucket: this.bucket,
           Key: key,
-        })
-        .promise();
+        }),
+      );
 
-      const content = response.Body?.toString("utf-8") || "";
+      if (!response.Body) {
+        return [];
+      }
+
+      const content = await response.Body.transformToString();
       const records = parse(content, {
         columns: true,
         skip_empty_lines: true,
@@ -252,12 +262,12 @@ class SnowflakeProcessor {
       const cutoffTime = new Date();
       cutoffTime.setHours(cutoffTime.getHours() - hours);
 
-      const params: AWS.S3.ListObjectsV2Request = {
+      const params: ListObjectsV2CommandInput = {
         Bucket: this.bucket,
       };
 
       do {
-        const data = await this.s3.listObjectsV2(params).promise();
+        const data = await this.s3.send(new ListObjectsV2Command(params));
 
         for (const obj of data.Contents || []) {
           if (obj.LastModified && obj.LastModified >= cutoffTime) {

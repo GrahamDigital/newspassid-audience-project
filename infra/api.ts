@@ -24,3 +24,8 @@ export const api = new sst.aws.Function("api", {
     ID_FOLDER: "newspassid",
   },
 });
+
+export const processor = new sst.aws.Function("processor", {
+  handler: "packages/functions/src/lib/snowflake-processor.handler",
+  runtime: "nodejs22.x",
+});

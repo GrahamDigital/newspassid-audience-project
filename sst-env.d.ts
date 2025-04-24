@@ -18,6 +18,10 @@ declare module "sst" {
       "type": "sst.aws.StaticSite"
       "url": string
     }
+    "processor": {
+      "name": string
+      "type": "sst.aws.Function"
+    }
     "router": {
       "type": "sst.aws.Router"
       "url": string
