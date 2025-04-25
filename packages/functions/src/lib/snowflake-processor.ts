@@ -79,7 +79,23 @@ class SnowflakeProcessor {
     return new Promise((resolve, reject) => {
       this.connection.connect((err) => {
         if (err) reject(err);
-        else resolve();
+        else {
+          // Set session parameters for database and warehouse
+          this.connection.execute({
+            sqlText: `
+              USE DATABASE ${Resource.SNOWFLAKE_DATABASE.value};
+            `,
+            complete: (err, stmt, rows) => {
+              if (err) {
+                console.error("Failed to set session parameters:", err);
+                reject(err);
+              } else {
+                console.log("Session parameters set successfully");
+                resolve();
+              }
+            },
+          });
+        }
       });
     });
   }
@@ -115,8 +131,6 @@ class SnowflakeProcessor {
       console.log("[getPublisherData] userId", userId);
       const statement = this.connection.execute({
         sqlText: `
-                    USE DATABASE ${Resource.SNOWFLAKE_DATABASE.value};
-                    USE WAREHOUSE ${Resource.SNOWFLAKE_WAREHOUSE.value};
                     SELECT 
                         user_id,
                         subscription_status,
@@ -127,9 +141,6 @@ class SnowflakeProcessor {
                     WHERE user_id = ?
                 `,
         binds: [userId],
-        parameters: {
-          MULTI_STATEMENT_COUNT: 3,
-        },
         complete: (err, stmt, rows) => {
           if (err) {
             console.error("Failed to execute getPublisherData statement:", err);
@@ -217,8 +228,6 @@ class SnowflakeProcessor {
     try {
       this.connection.execute({
         sqlText: `
-                    USE DATABASE ${Resource.SNOWFLAKE_DATABASE.value};
-                    USE WAREHOUSE ${Resource.SNOWFLAKE_WAREHOUSE.value};
                     CREATE TABLE IF NOT EXISTS enhanced_user_data (
                         newspass_id STRING,
                         timestamp TIMESTAMP_NTZ,
@@ -239,9 +248,6 @@ class SnowflakeProcessor {
                         processed_at TIMESTAMP_NTZ
                     )
                 `,
-        parameters: {
-          MULTI_STATEMENT_COUNT: 3,
-        },
         complete: (err, stmt, rows) => {
           if (err) {
             console.error("Failed to execute create table statement:", err);
@@ -255,8 +261,6 @@ class SnowflakeProcessor {
         console.log("[writeToSnowflake] record", record);
         this.connection.execute({
           sqlText: `
-                      USE DATABASE ${Resource.SNOWFLAKE_DATABASE.value};
-                      USE WAREHOUSE ${Resource.SNOWFLAKE_WAREHOUSE.value};
                       INSERT INTO enhanced_user_data (
                           newspass_id, timestamp, url, domain, publisher,
                           has_gdpr_consent, has_ccpa_consent, has_us_virginia_consent,
@@ -265,9 +269,6 @@ class SnowflakeProcessor {
                           user_segment, raw_segments, processed_at
                       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, PARSE_JSON(?), ?)
                     `,
-          parameters: {
-            MULTI_STATEMENT_COUNT: 3,
-          },
           binds: [
             record.newspass_id,
             record.timestamp,
