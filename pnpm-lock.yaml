@@ -92,6 +92,9 @@ importers:
       '@types/node':
         specifier: ^22.14.1
         version: 22.14.1
+      happy-dom:
+        specifier: ^17.4.4
+        version: 17.4.4
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
