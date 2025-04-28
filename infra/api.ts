@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 import { router } from "./router";
 import { bucket } from "./storage";
 
@@ -50,18 +51,20 @@ $app.stage === "production"
       },
       schedule: "rate(1 hour)",
     })
-  : new sst.aws.Function("snowflake-processor", {
-      handler: "packages/functions/src/lib/snowflake-processor.handler",
-      runtime: "nodejs22.x",
-      timeout: "1 minute",
-      link: [
-        SNOWFLAKE_ACCOUNT,
-        SNOWFLAKE_USER,
-        SNOWFLAKE_PASSWORD,
-        SNOWFLAKE_WAREHOUSE,
-        SNOWFLAKE_DATABASE,
-        SNOWFLAKE_SCHEMA,
-        bucket,
-      ],
-      url: true,
-    });
+  : $app.stage !== "dev"
+    ? new sst.aws.Function("snowflake-processor", {
+        handler: "packages/functions/src/lib/snowflake-processor.handler",
+        runtime: "nodejs22.x",
+        timeout: "1 minute",
+        link: [
+          SNOWFLAKE_ACCOUNT,
+          SNOWFLAKE_USER,
+          SNOWFLAKE_PASSWORD,
+          SNOWFLAKE_WAREHOUSE,
+          SNOWFLAKE_DATABASE,
+          SNOWFLAKE_SCHEMA,
+          bucket,
+        ],
+        url: true,
+      })
+    : undefined;

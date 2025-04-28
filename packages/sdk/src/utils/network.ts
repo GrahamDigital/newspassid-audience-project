@@ -17,7 +17,7 @@ export async function sendToBackend(
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
-      // credentials: "include",
+      credentials: "include",
     });
 
     if (!response.ok) {

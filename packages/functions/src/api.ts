@@ -8,6 +8,7 @@ import { parse } from "csv-parse/sync";
 import { Hono } from "hono";
 import type { LambdaContext, LambdaEvent } from "hono/aws-lambda";
 import { handle } from "hono/aws-lambda";
+import { setCookie } from "hono/cookie";
 import { cors } from "hono/cors";
 import { Resource } from "sst";
 import { z } from "zod";
@@ -176,6 +177,17 @@ const app = new Hono<{ Bindings: Bindings }>()
           }),
         );
       }
+
+      // set cookie
+      setCookie(c, "newspassid", data.id, {
+        path: "/",
+        secure: true,
+        // When `domain` is enabled, the cookie is not set
+        // domain: new URL(c.req.header("origin") ?? "").hostname,
+        httpOnly: false,
+        sameSite: "none",
+        expires: new Date(Date.now() + 400 * 24 * 60 * 60 * 1000),
+      });
 
       return c.json({
         success: true,
