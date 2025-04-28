@@ -26,7 +26,11 @@ export default [
     languageOptions: {
       parserOptions: {
         projectService: {
-          allowDefaultProject: ["prettier.config.js"],
+          allowDefaultProject: [
+            "prettier.config.js",
+            "packages/functions/__mocks__/fs/fs.cjs",
+            "packages/functions/__mocks__/fs/promises.cjs",
+          ],
           defaultProject: "tsconfig.json",
         },
         tsconfigRootDir: import.meta.dirname,

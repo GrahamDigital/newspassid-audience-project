@@ -1,27 +1,14 @@
-import { promises as fs } from "fs";
-import { beforeEach, describe, expect, it, Mock, vi } from "vitest";
+import { fs, vol } from "memfs";
+import { beforeEach, describe, expect, it } from "vitest";
 import {
   getDefaultSegments,
   getUserSegmentsFromFile,
 } from "../lib/segment-handler";
 
-vi.mock("fs", async () => {
-  // Return a partial mock of the 'fs' module
-  const actual = await vi.importActual<typeof import("fs")>("fs");
-  return {
-    ...actual,
-    promises: {
-      ...actual.promises,
-      readFile: vi.fn(),
-    },
-  };
-});
-
 describe("Segment Handler", () => {
-  const mockFs = vi.mocked(fs, true);
-
   beforeEach(() => {
-    vi.clearAllMocks();
+    // reset the state of in-memory fs
+    vol.reset();
   });
 
   describe("getUserSegmentsFromFile", () => {
@@ -29,22 +16,20 @@ describe("Segment Handler", () => {
       const mockSegments = {
         user123: ["segment1", "segment2"],
       };
-      mockFs.readFile.mockResolvedValueOnce(JSON.stringify(mockSegments));
 
-      const segments = await getUserSegmentsFromFile(
-        "user123",
-        "segments.json",
-      );
-      expect(segments).toEqual(["segment1", "segment2"]);
+      const path = "/segments.json";
+
+      fs.writeFileSync(path, JSON.stringify(mockSegments));
+
+      const segments = await getUserSegmentsFromFile("user123", path);
+
+      expect(segments).toEqual(mockSegments.user123);
     });
 
     it("should return default segments when file read fails", async () => {
-      mockFs.readFile.mockRejectedValueOnce(new Error("File not found"));
+      const path = "/segments.json";
 
-      const segments = await getUserSegmentsFromFile(
-        "user123",
-        "segments.json",
-      );
+      const segments = await getUserSegmentsFromFile("user123", path);
       expect(segments.length).toBeGreaterThan(0);
       expect(segments[0]).toMatch(/^seg_/);
     });
@@ -53,12 +38,13 @@ describe("Segment Handler", () => {
       const mockSegments = {
         otherUser: ["segment1", "segment2"],
       };
-      mockFs.readFile.mockResolvedValueOnce(JSON.stringify(mockSegments));
 
-      const segments = await getUserSegmentsFromFile(
-        "user123",
-        "segments.json",
-      );
+      const path = "/segments.json";
+
+      fs.writeFileSync(path, JSON.stringify(mockSegments));
+
+      const segments = await getUserSegmentsFromFile("user123", path);
+
       expect(segments.length).toBeGreaterThan(0);
       expect(segments[0]).toMatch(/^seg_/);
     });

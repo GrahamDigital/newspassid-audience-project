@@ -13,6 +13,14 @@
     ></script>
     <script>
       window.googletag = window.googletag || { cmd: [] };
+      // get newspassid cookie
+      const newspassid = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("newspassid="))
+        ?.split("=")[1];
+
+      console.log("[newspassid] cookie", newspassid);
+
       googletag.cmd.push(function () {
         // Define ad slots
         googletag
@@ -22,6 +30,9 @@
             "div-gpt-ad-1682372512510-0",
           )
           .addService(googletag.pubads());
+
+        // set ppid
+        googletag.pubads().setPublisherProvidedId(newspassid);
 
         // Enable services
         googletag.pubads().enableSingleRequest();

@@ -1,7 +1,14 @@
+// import AWS from "aws-sdk";
+import {
+  GetObjectCommand,
+  ListObjectsV2Command,
+  ListObjectsV2CommandInput,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import type { APIGatewayProxyResult } from "aws-lambda";
-import AWS from "aws-sdk";
 import { parse } from "csv-parse/sync";
 import * as snowflake from "snowflake-sdk";
+import { Resource } from "sst";
 
 type GppSignalMap = Record<string, string>;
 
@@ -27,7 +34,7 @@ interface LogRecord {
   url: string;
   domain: string;
   publisher: string;
-  consent_string: string;
+  consentString: string;
   segments?: string;
 }
 
@@ -40,22 +47,22 @@ interface EnhancedRecord extends LogRecord, GppSignals, PublisherData {
 type SnowflakeRow = Record<number, string | Date | null>;
 
 class SnowflakeProcessor {
-  private s3: AWS.S3;
+  private s3: S3Client;
   private bucket: string;
   protected connection: snowflake.Connection;
   private gppSignalMap: GppSignalMap;
 
   constructor() {
-    this.s3 = new AWS.S3();
-    this.bucket = process.env.STORAGE_BUCKET || "";
+    this.s3 = new S3Client();
+    this.bucket = Resource.data.name;
 
     this.connection = snowflake.createConnection({
-      account: process.env.SNOWFLAKE_ACCOUNT || "",
-      username: process.env.SNOWFLAKE_USER || "",
-      password: process.env.SNOWFLAKE_PASSWORD || "",
-      warehouse: process.env.SNOWFLAKE_WAREHOUSE || "",
-      database: process.env.SNOWFLAKE_DATABASE || "",
-      schema: process.env.SNOWFLAKE_SCHEMA || "",
+      account: Resource.SNOWFLAKE_ACCOUNT.value,
+      username: Resource.SNOWFLAKE_USER.value,
+      password: Resource.SNOWFLAKE_PASSWORD.value,
+      warehouse: Resource.SNOWFLAKE_WAREHOUSE.value,
+      database: Resource.SNOWFLAKE_DATABASE.value,
+      schema: Resource.SNOWFLAKE_SCHEMA.value,
     });
 
     this.gppSignalMap = {
@@ -70,9 +77,25 @@ class SnowflakeProcessor {
 
   async connect(): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.connection.connect((err: snowflake.SnowflakeError | undefined) => {
+      this.connection.connect((err) => {
         if (err) reject(err);
-        else resolve();
+        else {
+          // Set session parameters for database and warehouse
+          this.connection.execute({
+            sqlText: `
+              USE DATABASE ${Resource.SNOWFLAKE_DATABASE.value};
+            `,
+            complete: (err, stmt, rows) => {
+              if (err) {
+                console.error("Failed to set session parameters:", err);
+                reject(err);
+              } else {
+                console.log("Session parameters set successfully");
+                resolve();
+              }
+            },
+          });
+        }
       });
     });
   }
@@ -87,8 +110,12 @@ class SnowflakeProcessor {
       has_us_utah_consent: false,
     };
 
+    console.log("consentString", consentString);
+
     try {
       for (const [signalId, signalName] of Object.entries(this.gppSignalMap)) {
+        console.log("signalId", signalId);
+        console.log("signalName", signalName);
         const key =
           `has_${signalName.toLowerCase()}_consent` as keyof GppSignals;
         signals[key] = consentString.includes(signalId);
@@ -101,7 +128,8 @@ class SnowflakeProcessor {
 
   private async getPublisherData(userId: string): Promise<PublisherData> {
     try {
-      const statement = await this.connection.execute({
+      console.log("[getPublisherData] userId", userId);
+      const statement = this.connection.execute({
         sqlText: `
                     SELECT 
                         user_id,
@@ -113,9 +141,17 @@ class SnowflakeProcessor {
                     WHERE user_id = ?
                 `,
         binds: [userId],
+        complete: (err, stmt, rows) => {
+          if (err) {
+            console.error("Failed to execute getPublisherData statement:", err);
+          } else {
+            console.log("Number of rows produced: " + rows?.length);
+          }
+        },
       });
 
-      const rows = await statement.fetchRows();
+      const rows = statement.fetchRows({ start: 0, end: 10 });
+      console.log("[getPublisherData] rows", rows);
       if (rows) {
         const result = await new Promise<SnowflakeRow[]>((resolve) => {
           const data: SnowflakeRow[] = [];
@@ -143,14 +179,18 @@ class SnowflakeProcessor {
 
   private async processLogFile(key: string): Promise<EnhancedRecord[]> {
     try {
-      const response = await this.s3
-        .getObject({
+      const response = await this.s3.send(
+        new GetObjectCommand({
           Bucket: this.bucket,
           Key: key,
-        })
-        .promise();
+        }),
+      );
 
-      const content = response.Body?.toString("utf-8") || "";
+      if (!response.Body) {
+        return [];
+      }
+
+      const content = await response.Body.transformToString();
       const records = parse(content, {
         columns: true,
         skip_empty_lines: true,
@@ -159,7 +199,8 @@ class SnowflakeProcessor {
       const enhancedRecords: EnhancedRecord[] = [];
 
       for (const record of records) {
-        const gppSignals = this.processGppSignals(record.consent_string);
+        console.log("record", record);
+        const gppSignals = this.processGppSignals(record.consentString);
         const publisherData = await this.getPublisherData(record.id);
 
         const enhancedRecord: EnhancedRecord = {
@@ -185,7 +226,7 @@ class SnowflakeProcessor {
 
   private async writeToSnowflake(records: EnhancedRecord[]): Promise<void> {
     try {
-      await this.connection.execute({
+      this.connection.execute({
         sqlText: `
                     CREATE TABLE IF NOT EXISTS enhanced_user_data (
                         newspass_id STRING,
@@ -207,25 +248,33 @@ class SnowflakeProcessor {
                         processed_at TIMESTAMP_NTZ
                     )
                 `,
+        complete: (err, stmt, rows) => {
+          if (err) {
+            console.error("Failed to execute create table statement:", err);
+          } else {
+            console.log("create table statement executed successfully");
+          }
+        },
       });
 
       for (const record of records) {
-        await this.connection.execute({
+        console.log("[writeToSnowflake] record", record);
+        this.connection.execute({
           sqlText: `
-                        INSERT INTO enhanced_user_data (
-                            newspass_id, timestamp, url, domain, publisher,
-                            has_gdpr_consent, has_ccpa_consent, has_us_virginia_consent,
-                            has_us_colorado_consent, has_us_connecticut_consent, has_us_utah_consent,
-                            subscription_status, registration_date, last_login_date,
-                            user_segment, raw_segments, processed_at
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, PARSE_JSON(?), ?)
+                      INSERT INTO enhanced_user_data (
+                          newspass_id, timestamp, url, domain, publisher,
+                          has_gdpr_consent, has_ccpa_consent, has_us_virginia_consent,
+                          has_us_colorado_consent, has_us_connecticut_consent, has_us_utah_consent,
+                          subscription_status, registration_date, last_login_date,
+                          user_segment, raw_segments, processed_at
+                      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, PARSE_JSON(?), ?)
                     `,
           binds: [
             record.newspass_id,
             record.timestamp,
             record.url,
-            record.domain,
-            record.publisher,
+            record.domain ?? null,
+            record.publisher ?? null,
             record.has_gdpr_consent,
             record.has_ccpa_consent,
             record.has_us_virginia_consent,
@@ -239,6 +288,13 @@ class SnowflakeProcessor {
             record.raw_segments,
             record.processed_at,
           ] as snowflake.Bind[],
+          complete: (err, stmt, rows) => {
+            if (err) {
+              console.error("Failed to execute insert statement:", err);
+            } else {
+              console.log("insert statement executed successfully");
+            }
+          },
         });
       }
     } catch (error) {
@@ -252,16 +308,17 @@ class SnowflakeProcessor {
       const cutoffTime = new Date();
       cutoffTime.setHours(cutoffTime.getHours() - hours);
 
-      const params: AWS.S3.ListObjectsV2Request = {
+      const params: ListObjectsV2CommandInput = {
         Bucket: this.bucket,
       };
 
       do {
-        const data = await this.s3.listObjectsV2(params).promise();
+        const data = await this.s3.send(new ListObjectsV2Command(params));
 
         for (const obj of data.Contents || []) {
           if (obj.LastModified && obj.LastModified >= cutoffTime) {
             const records = await this.processLogFile(obj.Key || "");
+            console.log("[processRecentLogs] records", records);
             if (records.length > 0) {
               await this.writeToSnowflake(records);
             }

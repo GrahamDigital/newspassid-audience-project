@@ -1,4 +1,5 @@
-import { promises as fs } from "fs";
+// import { promises as fs } from "fs";
+import { readFile } from "node:fs/promises";
 
 type SegmentData = Record<string, string[] | undefined>;
 
@@ -14,7 +15,7 @@ export async function getUserSegmentsFromFile(
     let segmentData: SegmentData = {};
 
     try {
-      const fileContent = await fs.readFile(segmentsFile, "utf8");
+      const fileContent = await readFile(segmentsFile, "utf8");
       segmentData = JSON.parse(fileContent) as SegmentData;
     } catch (error) {
       console.warn(`Could not read segments file ${segmentsFile}:`, error);
