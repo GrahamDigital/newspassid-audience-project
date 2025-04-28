@@ -5,6 +5,10 @@ export default defineConfig({
     include: ["src/**/*.{test,spec}.{js,ts,jsx,tsx}"],
     environment: "happy-dom",
     globals: true,
-    // setupFiles: ["./src/tests/setup.ts"],
+    setupFiles: [
+      "./src/tests/setup.ts",
+      "./__mocks__/fs/fs.cjs",
+      "./__mocks__/fs/promises.cjs",
+    ],
   },
 });

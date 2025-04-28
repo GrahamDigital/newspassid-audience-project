@@ -1,7 +1,12 @@
+/* eslint-disable no-console */
+
 /**
  * Test setup file to silence console methods during test runs
  */
 import { afterAll, beforeAll, vi } from "vitest";
+
+vi.mock("node:fs");
+vi.mock("node:fs/promises");
 
 // Store original console methods
 const originalConsole = {
