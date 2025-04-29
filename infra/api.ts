@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
+
+// import { execSync } from "node:child_process";
 import { router } from "./router";
 import { bucket } from "./storage";
 
@@ -28,6 +30,14 @@ export const api = new sst.aws.Function("api", {
           cors: false,
         },
       }),
+  // hook: {
+  //   async postbuild(out) {
+  //     execSync("pnpm sentry-cli sourcemaps inject -i node_modules .", {
+  //       stdio: "inherit",
+  //       cwd: out,
+  //     });
+  //   },
+  // },
   environment: {
     ID_FOLDER: "newspassid",
   },

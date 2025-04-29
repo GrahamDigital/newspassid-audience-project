@@ -36,6 +36,9 @@ importers:
       eslint-config-prettier:
         specifier: ^10.1.2
         version: 10.1.2(eslint@9.25.0)
+      sentry-cli:
+        specifier: ^0.0.0
+        version: 0.0.0
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
@@ -2426,6 +2429,9 @@ packages:
   send@1.2.0:
     resolution: {integrity: sha512-uaW0WwXKpL9blXE2o0bRhoL2EGXIrZxQ2ZQ4mgcfoBxdFmQold+qWsD2jLrfZ0trjKL6vOw0j//eAwcALFjKSw==}
     engines: {node: '>= 18'}
+
+  sentry-cli@0.0.0:
+    resolution: {integrity: sha512-mqF5tmyoLRyNae/Vpdb0/+OGdDzvXnFFgbEni0cjymiuRcjns0eFG8hB4s3rPd8ngwQ7kE1o2k18cZBulrIlkA==}
 
   serve-static@2.2.0:
     resolution: {integrity: sha512-61g9pCh0Vnh7IutZjtLGGpTA355+OPn2TyDv/6ivP2h/AdAVX9azsoxmg2/M6nZeQZNYBEwIcsne1mJd9oQItQ==}
@@ -5704,6 +5710,8 @@ snapshots:
       statuses: 2.0.1
     transitivePeerDependencies:
       - supports-color
+
+  sentry-cli@0.0.0: {}
 
   serve-static@2.2.0:
     dependencies:

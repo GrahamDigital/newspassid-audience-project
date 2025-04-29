@@ -9,12 +9,11 @@
     "dist"
   ],
   "scripts": {
+    "build": "pnpm run build:library && pnpm run build:async-loader && pnpm run build:examples",
     "build:async-loader": "vite build --mode async",
     "build:library": "vite build",
-    "dev": "vite serve",
-    "build": "pnpm run build:library && pnpm run build:async-loader && pnpm run build:examples",
     "build:examples": "vite build --mode examples",
-    "predev": "pnpm run build",
+    "dev": "vite",
     "test": "vitest"
   },
   "dependencies": {
