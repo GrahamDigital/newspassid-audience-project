@@ -9,10 +9,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm run build:library && pnpm run build:async-loader && pnpm run build:examples",
+    "build": "pnpm run build:library && pnpm run build:async-loader",
     "build:async-loader": "vite build --mode async",
     "build:library": "vite build",
-    "build:examples": "vite build --mode examples",
     "dev": "vite",
     "test": "vitest"
   },

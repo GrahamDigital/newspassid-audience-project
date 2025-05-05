@@ -103,6 +103,7 @@ const app = new Hono<{ Bindings: Bindings }>()
     cors({
       origin: [
         "http://localhost:3000",
+        "http://localhost:5173",
         "https://*.gmg.io",
         "https://www.clickondetroit.com",
         "https://www.ksat.com",

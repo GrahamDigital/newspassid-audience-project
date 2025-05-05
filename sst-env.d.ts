@@ -46,6 +46,10 @@ declare module "sst" {
       "type": "sst.aws.Router"
       "url": string
     }
+    "sdk": {
+      "type": "sst.aws.StaticSite"
+      "url": string
+    }
     "snowflake-processor": {
       "name": string
       "type": "sst.aws.Function"

@@ -1,11 +1,12 @@
 import { api } from "./api";
 import { router } from "./router";
+import { cdn } from "./sdk";
 
 export const demo = new sst.aws.StaticSite("demo", {
-  path: "packages/sdk/examples/basic",
+  path: "packages/examples",
   build: {
     command: "pnpm run build",
-    output: "../../dist",
+    output: "dist",
   },
   router: {
     instance: router,
@@ -14,8 +15,9 @@ export const demo = new sst.aws.StaticSite("demo", {
   environment: {
     VITE_API_URL: api.url,
     VITE_STAGE: $app.stage,
+    VITE_CDN_URL: cdn.url,
   },
-  vite: {
-    types: "../../src/sst-env.d.ts",
-  },
+  // vite: {
+  //   types: "../../src/sst-env.d.ts",
+  // },
 });

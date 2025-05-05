@@ -26,7 +26,7 @@ window.newspassid_q = window.newspassid_q ?? [];
       ? "https://npid.gmg.io/examples/newspassid.js"
       : import.meta.env.VITE_STAGE === "dev"
         ? "https://npid-dev.gmg.io/examples/newspassid.js"
-        : "http://localhost:3000/examples/newspassid.js";
+        : "http://localhost:3000/newspassid.js";
   script.type = "module";
   script.async = true;
 

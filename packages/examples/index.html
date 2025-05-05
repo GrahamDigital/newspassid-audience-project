@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>NewsPassID Basic Example</title>
 
-    <!-- <script src="/newspassid-async.js" type="module" async></script> -->
     <!-- Google Ad Manager -->
     <script
       async
@@ -45,7 +44,9 @@
       // Function to load the NewsPassID script
       // Create script element
       const script = document.createElement("script");
-      script.src = "/examples/newspassid-async.js"; // Use the correct path in development mode
+      script.src = ["production", "dev"].includes(import.meta.env.VITE_STAGE)
+        ? `${import.meta.env.VITE_CDN_URL}/newspassid-async.js`
+        : "http://localhost:3000/newspassid-async.js";
       script.type = "module";
       script.async = true;
 
