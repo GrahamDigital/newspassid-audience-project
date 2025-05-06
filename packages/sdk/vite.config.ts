@@ -80,10 +80,7 @@ export default defineConfig(({ mode, command }) => {
   if (command === "serve") {
     return {
       publicDir: resolve(__dirname, "dist"),
-      server: {
-        port: 3000,
-        open: true,
-      },
+      server: { port: 3000 },
       build: {
         outDir: resolve(__dirname, "dist"),
         emptyOutDir: false,
