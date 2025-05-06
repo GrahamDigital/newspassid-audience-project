@@ -16,13 +16,13 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@newspassid-audience/core": "workspace:*",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "sst": "*"
   },
   "devDependencies": {
-    "@types/node": "^22.9.0",
-    "happy-dom": "^17.4.4",
-    "vite": "^6.3.2",
-    "vitest": "^3.1.2"
+    "@types/node": "^22.15.13",
+    "happy-dom": "^17.4.6",
+    "vite": "^6.3.5",
+    "vitest": "^3.1.3"
   }
 }

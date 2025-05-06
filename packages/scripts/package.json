@@ -2,12 +2,11 @@
   "name": "@newspassid-audience/scripts",
   "version": "0.0.0",
   "type": "module",
-  "dependencies": {
-    "@newspassid-audience/core": "workspace:*",
-    "sst": "*"
-  },
   "scripts": {
     "shell": "sst shell tsx"
+  },
+  "dependencies": {
+    "sst": "*"
   },
   "devDependencies": {
     "@types/node": "^22",
