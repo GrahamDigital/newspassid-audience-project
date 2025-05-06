@@ -19,14 +19,19 @@ window.newspassid_q = window.newspassid_q ?? [];
 
 // Function to load the newspassid script
 (function () {
+  // log the meta env
+  console.log("[newspassid] import.meta.env", import.meta.env);
   // Create script element
   const script = document.createElement("script");
-  script.src =
-    import.meta.env.VITE_STAGE === "production"
-      ? "https://npid.gmg.io/examples/newspassid.js"
-      : import.meta.env.VITE_STAGE === "dev"
-        ? "https://npid-dev.gmg.io/examples/newspassid.js"
-        : "http://localhost:3000/newspassid.js";
+  // script.src =
+  //   import.meta.env.VITE_STAGE === "production"
+  //     ? "https://npid.gmg.io/examples/newspassid.js"
+  //     : import.meta.env.VITE_STAGE === "dev"
+  //       ? "https://npid-dev.gmg.io/examples/newspassid.js"
+  //       : "http://localhost:3000/newspassid.js";
+  script.src = ["production", "dev"].includes(import.meta.env.VITE_STAGE)
+    ? `${import.meta.env.VITE_CDN_URL}/dist/newspassid.js`
+    : "http://localhost:3000/newspassid.js";
   script.type = "module";
   script.async = true;
 

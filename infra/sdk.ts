@@ -1,6 +1,7 @@
+import { api } from "./api";
 import { router } from "./router";
 
-export const cdn = new sst.aws.StaticSite("sdk", {
+export const sdk = new sst.aws.StaticSite("sdk", {
   path: "packages/sdk",
   build: {
     command: "pnpm run build",
@@ -9,5 +10,10 @@ export const cdn = new sst.aws.StaticSite("sdk", {
   router: {
     instance: router,
     path: "/dist",
+  },
+  environment: {
+    VITE_API_URL: api.url,
+    VITE_STAGE: $app.stage,
+    VITE_CDN_URL: router.url,
   },
 });
