@@ -79,13 +79,8 @@ export default defineConfig(({ mode, command }) => {
   // Dev server configuration
   if (command === "serve") {
     return {
-      base: "/examples/",
-      root: resolve(__dirname, "examples/basic"),
       publicDir: resolve(__dirname, "dist"),
-      server: {
-        port: 3000,
-        open: true,
-      },
+      server: { port: 3000 },
       build: {
         outDir: resolve(__dirname, "dist"),
         emptyOutDir: false,
@@ -94,19 +89,6 @@ export default defineConfig(({ mode, command }) => {
         },
       },
       plugins: [buildLibrariesFirst(), watchAndRebuild()],
-    };
-  }
-
-  // Build configuration for the example site
-  if (mode === "examples") {
-    return {
-      base: "/examples/",
-      root: resolve(__dirname, "examples/basic"),
-      publicDir: resolve(__dirname, "dist"),
-      build: {
-        outDir: resolve(__dirname, "dist"),
-        emptyOutDir: false,
-      },
     };
   }
 
@@ -141,6 +123,7 @@ export default defineConfig(({ mode, command }) => {
       },
       outDir: "dist",
       emptyOutDir: true, // Clean the output directory
+      minify: true,
     },
   };
 });

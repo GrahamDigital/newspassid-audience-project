@@ -10,6 +10,7 @@ import type { LambdaContext, LambdaEvent } from "hono/aws-lambda";
 import { handle } from "hono/aws-lambda";
 import { setCookie } from "hono/cookie";
 import { cors } from "hono/cors";
+import { logger } from "hono/logger";
 import { Resource } from "sst";
 import { z } from "zod";
 import { isValidId } from "./lib/utils";
@@ -30,8 +31,6 @@ const logRecordSchema = z.object({
   previousId: z.string().optional(),
   publisherSegments: z.array(z.string()).optional(),
 });
-
-// type LogRecord = z.infer<typeof logRecordSchema>;
 
 interface SegmentRecord {
   segments: string;
@@ -55,7 +54,6 @@ function getDomainFromUrl(url: string): string {
  * Reads and filters segments from a CSV file based on expiration timestamps.
  */
 async function getValidSegments(segmentsFile: string): Promise<string[]> {
-  console.info("[getValidSegments] segmentsFile", segmentsFile);
   try {
     const response = await s3.send(
       new GetObjectCommand({
@@ -73,8 +71,6 @@ async function getValidSegments(segmentsFile: string): Promise<string[]> {
       columns: true,
       skip_empty_lines: true,
     }) as SegmentRecord[];
-
-    console.info("[getValidSegments] records", records);
 
     const now = Date.now();
     return records
@@ -103,6 +99,7 @@ const app = new Hono<{ Bindings: Bindings }>()
     cors({
       origin: [
         "http://localhost:3000",
+        "http://localhost:5173",
         "https://*.gmg.io",
         "https://www.clickondetroit.com",
         "https://www.ksat.com",
@@ -116,12 +113,12 @@ const app = new Hono<{ Bindings: Bindings }>()
       credentials: true,
     }),
   )
+  .use(logger())
   .post("/newspassid", zValidator("json", logRecordSchema), async (c) => {
     try {
       const data = c.req.valid("json");
-      // const data = await c.req.json();
 
-      console.info("[handler] data", data);
+      console.log("[api.handler] body", data);
 
       // Validate ID format
       if (!isValidId(data.id)) {
