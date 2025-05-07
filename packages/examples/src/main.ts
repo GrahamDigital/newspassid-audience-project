@@ -11,7 +11,6 @@ script.async = true;
 const head = document.head;
 head.appendChild(script);
 
-console.log("[ENV]", import.meta.env);
 // Publisher configuration
 window.NEWSPASS_CONFIG = {
   namespace: "gmg",
@@ -41,7 +40,6 @@ window.addEventListener("newspassSegmentsReady", function () {
 
   // Refresh ads when segments are ready
   googletag.cmd.push(function () {
-    console.log("[googletag] refresh");
     googletag.pubads().refresh();
   });
 });

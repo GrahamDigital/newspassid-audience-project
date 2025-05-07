@@ -50,11 +50,6 @@ declare module "sst" {
       "type": "sst.aws.StaticSite"
       "url": string
     }
-    "snowflake-processor": {
-      "name": string
-      "type": "sst.aws.Function"
-      "url": string
-    }
   }
 }
 /// <reference path="sst-env.d.ts" />
