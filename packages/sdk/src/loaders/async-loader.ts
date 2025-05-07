@@ -19,8 +19,6 @@ window.NewsPassIDQ = window.NewsPassIDQ ?? [];
 
 // Function to load the newspassid script
 (function () {
-  console.log("[newspassid] import.meta.env", import.meta.env);
-
   const script = document.createElement("script");
   script.src = ["production", "dev"].includes(import.meta.env.VITE_STAGE)
     ? `${import.meta.env.VITE_CDN_URL}/dist/newspassid.js`
@@ -113,7 +111,6 @@ window.NewsPassIDQ = window.NewsPassIDQ ?? [];
       const cookie = getCookie(NEWSPASS_CONFIG.storageKey ?? "newspassid");
 
       if (cookie) {
-        console.log("[newspassid] found cookie with key", cookie);
         return cookie;
       }
       return localStorage.getItem(NEWSPASS_CONFIG.storageKey ?? "newspassid");
