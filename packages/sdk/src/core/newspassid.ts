@@ -67,13 +67,19 @@ class NewsPassIDImpl implements NewsPassID {
       this.consentString = "";
     }
 
+    console.info("[newspassid] previousId", {
+      id,
+      storedId,
+      idEqualsStoredId: id && storedId && id === storedId,
+    });
+
     // Create payload for backend
     const payload: IdPayload = {
       id: userId,
       timestamp: Date.now(),
       url: window.location.href,
       consentString: this.consentString ?? "",
-      previousId: id && storedId && id !== storedId ? storedId : undefined,
+      previousId: storedId && userId !== storedId ? storedId : undefined,
       publisherSegments,
     };
 

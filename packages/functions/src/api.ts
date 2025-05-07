@@ -118,7 +118,7 @@ const app = new Hono<{ Bindings: Bindings }>()
     try {
       const data = c.req.valid("json");
 
-      console.log("[api.handler] body", data);
+      console.info("[api.handler] body", data);
 
       // Validate ID format
       if (!isValidId(data.id)) {
