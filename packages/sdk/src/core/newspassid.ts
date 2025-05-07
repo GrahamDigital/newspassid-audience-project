@@ -8,11 +8,11 @@ import { getGppConsentString } from "./gpp-api";
 import type {
   IdPayload,
   NewsPassConfig,
-  NewsPassID,
+  // NewsPassID, // Removed as it's no longer used directly in this file
   SegmentKeyValue,
 } from "./types";
 
-class NewsPassIDImpl implements NewsPassID {
+export class NewsPassIDImpl {
   private config: NewsPassConfig;
   private segments: string[] = [];
   private consentString?: string;
@@ -66,12 +66,6 @@ class NewsPassIDImpl implements NewsPassID {
       console.warn("newspassid: Failed to get GPP consent:", error);
       this.consentString = "";
     }
-
-    console.info("[newspassid] previousId", {
-      id,
-      storedId,
-      idEqualsStoredId: id && storedId && id === storedId,
-    });
 
     // Create payload for backend
     const payload: IdPayload = {
@@ -258,6 +252,6 @@ class NewsPassIDImpl implements NewsPassID {
 /**
  * Factory function to create a NewsPassID instance
  */
-export function createNewsPassID(config: NewsPassConfig): NewsPassID {
+export function createNewsPassID(config: NewsPassConfig): NewsPassIDImpl {
   return new NewsPassIDImpl(config);
 }

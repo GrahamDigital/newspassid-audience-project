@@ -1,3 +1,6 @@
+// Add type alias for NewsPassID based on NewsPassIDImpl
+import type { NewsPassIDImpl as NewsPassIDImplClass } from "./newspassid";
+
 /**
  * Type definitions for NewsPassID
  */
@@ -83,18 +86,7 @@ export interface SegmentResponse {
 // Segment types
 export type SegmentKeyValue = Record<string, string>;
 
-// Main NewsPassID interface
-export interface NewsPassID {
-  clearID(): void;
-  getID(): string | null;
-  getSegments(): string[];
-  getSegmentsAsKeyValue(): SegmentKeyValue;
-  setID(
-    id?: string,
-    publisherSegments?: string[],
-    generateNewId?: boolean,
-  ): Promise<string>;
-}
+export type NewsPassID = NewsPassIDImplClass;
 
 // Extend Window interface
 declare global {
