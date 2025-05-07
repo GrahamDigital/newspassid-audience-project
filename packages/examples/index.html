@@ -39,36 +39,6 @@
       });
     </script>
 
-    <!-- NewsPassID Async Loader - Place as early as possible in the head -->
-    <script type="module">
-      // Function to load the NewsPassID script
-      // Create script element
-      const script = document.createElement("script");
-      script.src = ["production", "dev"].includes(import.meta.env.VITE_STAGE)
-        ? `${import.meta.env.VITE_CDN_URL}/newspassid-async.js`
-        : "http://localhost:3000/newspassid-async.js";
-      script.type = "module";
-      script.async = true;
-
-      // Add script to the document
-      const head = document.head || document.getElementsByTagName("head")[0];
-      head.appendChild(script);
-
-      console.log("[ENV]", import.meta.env);
-      // Publisher configuration
-      window.NEWSPASS_CONFIG = {
-        namespace: "gmg",
-        lambdaEndpoint: ["production", "dev"].includes(
-          import.meta.env.VITE_STAGE,
-        )
-          ? import.meta.env.VITE_API_URL
-          : `${import.meta.env.VITE_API_URL}newspassid`,
-      };
-
-      // Initialize the queue and NewsPassID global object
-      window.NewsPassIDQ = window.NewsPassIDQ || [];
-    </script>
-
     <!-- Other head elements -->
     <style>
       body {
@@ -79,12 +49,14 @@
         max-width: 800px;
         margin: 0 auto;
       }
+
       .container {
         border: 1px solid #ddd;
         padding: 20px;
         margin-top: 20px;
         border-radius: 4px;
       }
+
       button {
         background: #4caf50;
         color: white;
@@ -94,25 +66,30 @@
         cursor: pointer;
         margin-right: 10px;
       }
+
       button:hover {
         background: #45a049;
       }
+
       pre {
         background: #f5f5f5;
         padding: 10px;
         border-radius: 4px;
         overflow-x: auto;
       }
+
       h1,
       h2 {
         color: #333;
       }
+
       .status {
         margin-top: 20px;
         padding: 10px;
         background: #e8f5e9;
         border-radius: 4px;
       }
+
       .ad-container {
         margin: 20px 0;
         padding: 10px;
@@ -121,12 +98,22 @@
         border-radius: 4px;
         text-align: center;
       }
+
+      .ad-wrapper {
+        width: 300px;
+        height: 250px;
+        margin: 0 auto;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 10px;
+      }
     </style>
   </head>
+
   <body>
     <h1>NewsPassID Basic Example</h1>
     <p>This example demonstrates the basic functionality of NewsPassID.</p>
-
     <div class="container">
       <h2>Current Status</h2>
       <div class="status" id="status">Loading NewsPassID...</div>
@@ -146,7 +133,7 @@
     <!-- Display Ad -->
     <div class="ad-container">
       <h3>Display Ad (300x250)</h3>
-      <div id="div-gpt-ad-1682372512510-0">
+      <div id="div-gpt-ad-1682372512510-0" class="ad-wrapper">
         <script>
           googletag.cmd.push(function () {
             googletag.display("div-gpt-ad-1682372512510-0");
@@ -155,101 +142,6 @@
       </div>
     </div>
 
-    <script>
-      // DOM elements
-      const statusEl = document.getElementById("status");
-      const resultsEl = document.getElementById("results");
-      const getIdBtn = document.getElementById("get-id");
-      const getSegmentsBtn = document.getElementById("get-segments");
-      const clearIdBtn = document.getElementById("clear-id");
-      const setIdBtn = document.getElementById("manual-set-id");
-
-      // Update status when NewsPassID is ready
-      window.addEventListener("newspassSegmentsReady", function (event) {
-        statusEl.textContent = "NewsPassID is active and segments are loaded.";
-        updateResults();
-
-        // Refresh ads when segments are ready
-        googletag.cmd.push(function () {
-          googletag.pubads().refresh();
-        });
-      });
-
-      // Check every second if NewsPassID is ready
-      const checkInterval = setInterval(function () {
-        if (window.newspassid && window.newspassid.getID) {
-          const id = window.newspassid.getID();
-          if (id) {
-            statusEl.textContent = "NewsPassID is active.";
-            resultsEl.textContent = `Current ID: ${id}`;
-            clearInterval(checkInterval);
-          }
-        }
-      }, 250);
-
-      // Button event handlers
-      getIdBtn.addEventListener("click", function () {
-        if (window.newspassid && window.newspassid.getID) {
-          const id = window.newspassid.getID();
-          resultsEl.textContent = `Current ID: ${id || "No ID set"}`;
-        } else {
-          resultsEl.textContent = "NewsPassID not ready yet.";
-        }
-      });
-
-      getSegmentsBtn.addEventListener("click", function () {
-        if (window.newspassid && window.newspassid.getSegments) {
-          const segments = window.newspassid.getSegments();
-          resultsEl.textContent = `Segments: ${segments.length ? segments.join(", ") : "No segments"}`;
-        } else {
-          resultsEl.textContent = "NewsPassID not ready yet.";
-        }
-      });
-
-      clearIdBtn.addEventListener("click", function () {
-        if (window.newspassid && window.newspassid.clearID) {
-          window.newspassid.clearID();
-          resultsEl.textContent = "ID cleared.";
-          statusEl.textContent =
-            "ID cleared. Reload the page to generate a new one.";
-
-          // Refresh ads after clearing ID
-          googletag.cmd.push(function () {
-            googletag.pubads().refresh();
-          });
-        } else {
-          resultsEl.textContent = "NewsPassID not ready yet.";
-        }
-      });
-
-      setIdBtn.addEventListener("click", function () {
-        if (window.newspassid && window.newspassid.setID) {
-          // const customId = "gmg-" + Math.random().toString(36).substring(2, 10);
-          const newId = window.newspassid.generateId();
-          window.newspassid.setID(newId).then(function (id) {
-            resultsEl.textContent = `New ID set: ${id}`;
-            updateResults();
-
-            // Refresh ads after setting new ID
-            googletag.cmd.push(function () {
-              googletag.pubads().refresh();
-            });
-          });
-        } else {
-          resultsEl.textContent = "NewsPassID not ready yet.";
-        }
-      });
-
-      // Helper to update results
-      function updateResults() {
-        if (window.newspassid) {
-          const id = window.newspassid.getID();
-          const segments = window.newspassid.getSegments();
-          resultsEl.textContent = "Current State:\n\n";
-          resultsEl.textContent += `ID: ${id || "No ID set"}\n`;
-          resultsEl.textContent += `Segments: ${segments.length ? segments.join(", ") : "No segments"}`;
-        }
-      }
-    </script>
+    <script type="module" src="./src/main.ts"></script>
   </body>
 </html>

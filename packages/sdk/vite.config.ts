@@ -1,8 +1,9 @@
 import { exec } from "child_process";
 import { resolve } from "path";
 import { promisify } from "util";
+import type { HmrContext } from "vite";
 import { defineConfig } from "vite";
-import type { ViteDevServer } from "vite";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 const execAsync = promisify(exec);
 
@@ -36,41 +37,40 @@ const buildLibrariesFirst = () => {
 const watchAndRebuild = () => {
   return {
     name: "watch-and-rebuild",
-    configureServer: (server: ViteDevServer) => {
-      // Watch for changes in the src directory
-      const watcher = server.watcher;
+    async handleHotUpdate(ctx: HmrContext) {
+      // ctx contains { file, timestamp, modules, read, server }
+      // Check if the changed file is within the src directory
+      if (ctx.file.includes("/src/")) {
+        console.info(
+          `[HMR] Change detected in ${ctx.file}. Rebuilding libraries...`,
+        );
 
-      // Add a watch on the src directory
-      watcher.add(resolve(__dirname, "src"));
+        try {
+          // Build the main library
+          await execAsync("npm run build:library");
 
-      // Listen for changes
-      watcher.on("change", (path: string) => {
-        // Only rebuild if the change is in the src directory
-        if (path.includes("/src/")) {
-          console.info(`Change detected in ${path}. Rebuilding libraries...`);
+          // Build the async loader
+          await execAsync("npm run build:async-loader");
 
-          // Use void to handle the Promise
-          void (async () => {
-            try {
-              // Build the main library
-              await execAsync("npm run build:library");
-
-              // Build the async loader
-              await execAsync("npm run build:async-loader");
-
-              console.info("Libraries rebuilt successfully.");
-
-              // Notify the client to reload
-              server.ws.send({
-                type: "full-reload",
-                path: "*",
-              });
-            } catch (error) {
-              console.error("Error rebuilding libraries:", error);
-            }
-          })();
+          // Return an empty array to indicate that we've handled this update
+          // and Vite should not perform further HMR processing on these modules.
+          return [];
+        } catch (error) {
+          console.error("[HMR] Error rebuilding libraries:", error);
+          // Optionally, still trigger a full reload on error
+          ctx.server.ws.send({
+            type: "full-reload",
+            path: "*",
+          });
+          return [];
         }
-      });
+      }
+
+      // For files not in /src/, or if we want Vite to attempt default HMR
+      // for the modules affected by this change, return ctx.modules or undefined.
+      // If we only care about /src/ changes for this plugin's specific actions,
+      // and the change was not in /src/, returning undefined (implicitly) is fine.
+      return undefined;
     },
   };
 };
@@ -88,7 +88,7 @@ export default defineConfig(({ mode, command }) => {
           include: ["src/**"],
         },
       },
-      plugins: [buildLibrariesFirst(), watchAndRebuild()],
+      plugins: [tsconfigPaths(), buildLibrariesFirst(), watchAndRebuild()],
     };
   }
 
@@ -107,6 +107,7 @@ export default defineConfig(({ mode, command }) => {
         emptyOutDir: false, // Don't clean the output directory
         minify: true,
       },
+      plugins: [tsconfigPaths()],
     };
   }
 
@@ -125,5 +126,6 @@ export default defineConfig(({ mode, command }) => {
       emptyOutDir: true, // Clean the output directory
       minify: true,
     },
+    plugins: [tsconfigPaths()],
   };
 });

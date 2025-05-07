@@ -16,13 +16,15 @@
     "test": "vitest"
   },
   "dependencies": {
-    "uuid": "^11.1.0",
-    "sst": "*"
+    "sst": "*",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@types/google-publisher-tag": "^1.20250428.0",
     "@types/node": "^22.15.13",
     "happy-dom": "^17.4.6",
     "vite": "^6.3.5",
+    "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.1.3"
   }
 }
