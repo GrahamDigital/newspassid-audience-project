@@ -1,7 +1,8 @@
 /**
  * IAB GPP API integration
  */
-// import { GPPData } from "./types";
+
+import { getCookie } from "@/utils/storage";
 
 /**
  * Get consent string using the IAB GPP JavaScript API
@@ -83,21 +84,4 @@ export function setUsPrivacyCookie(value: string, days = 365): void {
     "; expires=" +
     expires +
     "; path=/; SameSite=Lax";
-}
-
-/**
- * Helper to get a cookie by name
- */
-function getCookie(name: string): string | null {
-  try {
-    if (!document.cookie || document.cookie.trim() === "") {
-      return null;
-    }
-
-    const match = new RegExp("(^| )" + name + "=([^;]+)").exec(document.cookie);
-    return match ? match[2] : null;
-  } catch (e) {
-    console.warn(`newspassid: Error getting cookie "${name}":`, e);
-    return null;
-  }
 }

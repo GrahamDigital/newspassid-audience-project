@@ -31,3 +31,21 @@ export function clearId(key: string): void {
     console.warn("newspassid: Unable to remove from localStorage:", e);
   }
 }
+
+/**
+ * Helper to get a cookie by name
+ */
+
+export function getCookie(name: string): string | null {
+  try {
+    if (!document.cookie || document.cookie.trim() === "") {
+      return null;
+    }
+
+    const match = new RegExp("(^| )" + name + "=([^;]+)").exec(document.cookie);
+    return match ? match[2] : null;
+  } catch (e) {
+    console.warn(`newspassid: Error getting cookie "${name}":`, e);
+    return null;
+  }
+}

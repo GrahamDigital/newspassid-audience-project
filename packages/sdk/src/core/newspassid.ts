@@ -9,10 +9,11 @@ import type {
   IdPayload,
   NewsPassConfig,
   NewsPassID,
+  // NewsPassID, // Removed as it's no longer used directly in this file
   SegmentKeyValue,
 } from "./types";
 
-class NewsPassIDImpl implements NewsPassID {
+export class NewsPassIDImpl {
   private config: NewsPassConfig;
   private segments: string[] = [];
   private consentString?: string;
@@ -34,10 +35,18 @@ class NewsPassIDImpl implements NewsPassID {
    * @param publisherSegments Optional array of publisher segment IDs
    * @returns Promise resolving to the ID
    */
-  async setID(id?: string, publisherSegments?: string[]): Promise<string> {
+  async setID(
+    id?: string,
+    publisherSegments?: string[],
+    generateNewId?: boolean,
+  ): Promise<string> {
     const storageKey = this.config.storageKey ?? "newspassid";
     const storedId = getStoredId(storageKey);
-    const userId = id ?? storedId ?? this.generateId();
+
+    let userId = id ?? storedId;
+    if (generateNewId || !userId) {
+      userId = this.generateId();
+    }
 
     if (userId !== storedId) {
       storeId(storageKey, userId);
@@ -65,7 +74,7 @@ class NewsPassIDImpl implements NewsPassID {
       timestamp: Date.now(),
       url: window.location.href,
       consentString: this.consentString ?? "",
-      previousId: id && storedId && id !== storedId ? storedId : undefined,
+      previousId: storedId && userId !== storedId ? storedId : undefined,
       publisherSegments,
     };
 
@@ -212,15 +221,12 @@ class NewsPassIDImpl implements NewsPassID {
   private applySegmentsToPage(segments: string[]): void {
     // Global data layer for easy access
     window.newspass_segments = segments;
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    const googletag = window.googletag ?? { cmd: [] };
 
     // For Google Ad Manager (GAM)
-    if (window.googletag?.pubads) {
-      // Set all segments as a single array to a single key
-      window.googletag.pubads().setTargeting("npid_segments", segments);
-
-      // Refresh ads to apply new targeting
-      window.googletag.pubads().refresh();
-    }
+    // Set all segments as a single array to a single key
+    googletag.pubads().setTargeting("npid_segments", segments);
 
     // For Prebid.js
     if (window.pbjs) {
@@ -247,6 +253,8 @@ class NewsPassIDImpl implements NewsPassID {
 /**
  * Factory function to create a NewsPassID instance
  */
-export function createNewsPassID(config: NewsPassConfig): NewsPassID {
+export function createNewsPassID(config: NewsPassConfig): NewsPassIDImpl {
   return new NewsPassIDImpl(config);
 }
+
+export type { NewsPassConfig, NewsPassID };

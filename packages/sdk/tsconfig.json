@@ -15,7 +15,7 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": ["vite/client"]
+    "types": ["vite/client", "vitest/globals", "@types/google-publisher-tag"]
   },
   "include": ["src/**/*.ts", "../../reset.d.ts"],
   "exclude": ["node_modules", "dist"]

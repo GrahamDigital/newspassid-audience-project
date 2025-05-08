@@ -144,6 +144,42 @@ describe("NewsPassID", () => {
     );
   });
 
+  test("should generate a new ID if none is provided", async () => {
+    const newspassId = createNewsPassID({
+      namespace: "test",
+      lambdaEndpoint: "https://api.example.com/newspassid",
+    });
+
+    const id = await newspassId.setID();
+    expect(id).toBeDefined();
+    expect(id).toContain("test-");
+    expect(localStorageMock.setItem).toHaveBeenCalledWith("newspassid", id);
+  });
+
+  test("should generate a new ID if none is provided and generateNewId is true", async () => {
+    const newspassId = createNewsPassID({
+      namespace: "test",
+      lambdaEndpoint: "https://api.example.com/newspassid",
+    });
+
+    const id = await newspassId.setID(undefined, undefined, true);
+    expect(id).toBeDefined();
+    expect(id).toContain("test-");
+    expect(localStorageMock.setItem).toHaveBeenCalledWith("newspassid", id);
+  });
+
+  test("should generate a new ID if one is provided and generateNewId is true", async () => {
+    const newspassId = createNewsPassID({
+      namespace: "test",
+      lambdaEndpoint: "https://api.example.com/newspassid",
+    });
+
+    const id = await newspassId.setID("test-id", undefined, true);
+    expect(id).toBeDefined();
+    expect(id).toContain("test-");
+    expect(localStorageMock.setItem).toHaveBeenCalledWith("newspassid", id);
+  });
+
   test("should return segments", async () => {
     const newspassId = createNewsPassID({
       namespace: "test",

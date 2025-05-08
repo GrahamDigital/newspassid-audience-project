@@ -1,5 +1,4 @@
-// Add type alias for NewsPassID based on NewsPassIDImpl
-import type { NewsPassIDImpl as NewsPassIDImplClass } from "./newspassid";
+import type { NewsPassConfig, NewsPassID } from "@newspassid-audience/sdk";
 
 /**
  * Type definitions for NewsPassID
@@ -18,21 +17,19 @@ import type { NewsPassIDImpl as NewsPassIDImplClass } from "./newspassid";
  * const s2: ButtonSize = 'custom-size'; // Allowed
  * const s3: ButtonSize = 123; // Error: Type 'number' is not assignable to type 'ButtonSize'.
  */
-export type StringWithAutocomplete<Literals extends string> =
-  | Literals
-  | (string & {});
+type StringWithAutocomplete<Literals extends string> = Literals | (string & {});
 
 // IAB GPP API Types
-export interface GPPData {
+interface GPPData {
   gppString: string;
   applicableSections?: number[];
   gppVersion?: string;
   sectionExist?: Record<string, boolean>;
 }
 
-export type GPPCallback = (data: GPPData | null, success: boolean) => void;
+type GPPCallback = (data: GPPData | null, success: boolean) => void;
 
-export interface GPPPingResponse {
+interface GPPPingResponse {
   gppVersion: string;
   cmpStatus: StringWithAutocomplete<"loaded" | "stub">;
   cmpDisplayStatus: StringWithAutocomplete<"visible" | "hidden" | "disabled">;
@@ -42,7 +39,7 @@ export interface GPPPingResponse {
   signalStatus?: StringWithAutocomplete<"ready" | "not ready">;
 }
 
-export interface GPP {
+interface GPP {
   (command: "ping", callback: (pingData: GPPPingResponse) => void): void;
   (command: "getGPPData", callback: GPPCallback): void;
   (command: string, callback: GPPCallback, parameter?: unknown): void;
@@ -51,42 +48,32 @@ export interface GPP {
 }
 
 // NewsPassID specific types
-export interface NewsPassConfig {
-  /** Publisher namespace for the ID (e.g., 'your-publisher') */
-  namespace: string;
-  /** URL endpoint for the NewsPassID backend service */
-  lambdaEndpoint: string;
-  /** Custom storage key for localStorage (default: 'newspassid') */
-  storageKey?: string;
-  /** Whether to inject segment meta tags in the head (default: true) */
-  injectMetaTags?: boolean;
-}
-
-export interface IdPayload {
-  /** The NewsPassID */
-  id: string;
-  /** Unix timestamp of the request */
-  timestamp: number;
-  /** Current page URL */
-  url: string;
-  /** User consent string (required) */
-  consentString: string;
-  /** Previous NewsPassID for mapping (optional) */
-  previousId?: string;
-  /** Custom publisher segment IDs (optional) */
-  publisherSegments?: string[];
-}
-
-export interface SegmentResponse {
-  id: string;
-  segments: string[];
-  success: boolean;
-}
+// interface NewsPassConfig {
+//   /** Publisher namespace for the ID (e.g., 'your-publisher') */
+//   namespace: string;
+//   /** URL endpoint for the NewsPassID backend service */
+//   lambdaEndpoint: string;
+//   /** Custom storage key for localStorage (default: 'newspassid') */
+//   storageKey?: string;
+//   /** Whether to inject segment meta tags in the head (default: true) */
+//   injectMetaTags?: boolean;
+// }
 
 // Segment types
-export type SegmentKeyValue = Record<string, string>;
+// type SegmentKeyValue = Record<string, string>;
 
-export type NewsPassID = NewsPassIDImplClass;
+// Main NewsPassID interface
+// interface NewsPassID {
+//   clearID(): void;
+//   getID(): string | null;
+//   getSegments(): string[];
+//   getSegmentsAsKeyValue(): SegmentKeyValue;
+//   setID(
+//     id?: string,
+//     publisherSegments?: string[],
+//     generateNewId?: boolean,
+//   ): Promise<string>;
+// }
 
 // Extend Window interface
 declare global {
@@ -98,12 +85,6 @@ declare global {
     NEWSPASS_CONFIG?: NewsPassConfig;
     createNewsPassID?: (config: NewsPassConfig) => NewsPassID;
     newspass_initialized?: boolean;
-    // googletag?: {
-    //   pubads: () => {
-    //     setTargeting: (key: string, value: string | string[]) => void;
-    //     refresh: () => void;
-    //   };
-    // };
     pbjs?: {
       setTargetingForGPTAsync: (targeting: Record<string, unknown>) => void;
     };
@@ -112,3 +93,5 @@ declare global {
     };
   }
 }
+
+// export {};
