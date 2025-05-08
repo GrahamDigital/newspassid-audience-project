@@ -3,6 +3,7 @@ import { resolve } from "path";
 import { promisify } from "util";
 import type { HmrContext } from "vite";
 import { defineConfig } from "vite";
+import dts from "vite-plugin-dts";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 const execAsync = promisify(exec);
@@ -88,7 +89,12 @@ export default defineConfig(({ mode, command }) => {
           include: ["src/**"],
         },
       },
-      plugins: [tsconfigPaths(), buildLibrariesFirst(), watchAndRebuild()],
+      plugins: [
+        tsconfigPaths(),
+        dts({ rollupTypes: true }),
+        buildLibrariesFirst(),
+        watchAndRebuild(),
+      ],
     };
   }
 
@@ -107,7 +113,7 @@ export default defineConfig(({ mode, command }) => {
         emptyOutDir: false, // Don't clean the output directory
         minify: true,
       },
-      plugins: [tsconfigPaths()],
+      plugins: [tsconfigPaths(), dts({ rollupTypes: true })],
     };
   }
 
@@ -126,6 +132,6 @@ export default defineConfig(({ mode, command }) => {
       emptyOutDir: true, // Clean the output directory
       minify: true,
     },
-    plugins: [tsconfigPaths()],
+    plugins: [tsconfigPaths(), dts({ rollupTypes: true })],
   };
 });

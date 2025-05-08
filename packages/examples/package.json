@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@newspassid-audience/sdk": "workspace:*",
     "sst": "*"
   },
   "devDependencies": {

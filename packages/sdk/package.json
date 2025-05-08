@@ -2,9 +2,13 @@
   "name": "@newspassid-audience/sdk",
   "version": "0.0.0",
   "type": "module",
-  "main": "dist/newspassid.js",
-  "module": "dist/newspassid.esm.js",
-  "types": "dist/newspassid.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/newspassid.js",
+      "import": "./dist/newspassid.esm.js",
+      "types": "./dist/newspassid.d.ts"
+    }
+  },
   "files": [
     "dist"
   ],
@@ -24,6 +28,7 @@
     "@types/node": "^22.15.13",
     "happy-dom": "^17.4.6",
     "vite": "^6.3.5",
+    "vite-plugin-dts": "^4.5.3",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.1.3"
   }

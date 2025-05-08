@@ -8,6 +8,7 @@ import { getGppConsentString } from "./gpp-api";
 import type {
   IdPayload,
   NewsPassConfig,
+  NewsPassID,
   // NewsPassID, // Removed as it's no longer used directly in this file
   SegmentKeyValue,
 } from "./types";
@@ -255,3 +256,5 @@ export class NewsPassIDImpl {
 export function createNewsPassID(config: NewsPassConfig): NewsPassIDImpl {
   return new NewsPassIDImpl(config);
 }
+
+export type { NewsPassConfig, NewsPassID };
