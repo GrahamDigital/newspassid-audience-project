@@ -10,7 +10,10 @@
   },
   "dependencies": {
     "@newspassid-audience/sdk": "workspace:*",
-    "sst": "*"
+    "@tailwindcss/vite": "^4.1.5",
+    "sst": "*",
+    "tailwindcss": "^4.1.5",
+    "tw-animate-css": "^1.2.9"
   },
   "devDependencies": {
     "@types/google-publisher-tag": "^1.20250428.0",

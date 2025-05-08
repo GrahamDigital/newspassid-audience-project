@@ -4,9 +4,9 @@
   "type": "module",
   "exports": {
     ".": {
+      "types": "./dist/newspassid.d.ts",
       "require": "./dist/newspassid.js",
-      "import": "./dist/newspassid.esm.js",
-      "types": "./dist/newspassid.d.ts"
+      "import": "./dist/newspassid.esm.js"
     }
   },
   "files": [

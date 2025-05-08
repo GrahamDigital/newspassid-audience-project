@@ -40,108 +40,154 @@
     </script>
 
     <!-- Other head elements -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        line-height: 1.6;
-        margin: 0;
-        padding: 20px;
-        max-width: 800px;
-        margin: 0 auto;
-      }
-
-      .container {
-        border: 1px solid #ddd;
-        padding: 20px;
-        margin-top: 20px;
-        border-radius: 4px;
-      }
-
-      button {
-        background: #4caf50;
-        color: white;
-        border: none;
-        padding: 10px 15px;
-        border-radius: 4px;
-        cursor: pointer;
-        margin-right: 10px;
-      }
-
-      button:hover {
-        background: #45a049;
-      }
-
-      pre {
-        background: #f5f5f5;
-        padding: 10px;
-        border-radius: 4px;
-        overflow-x: auto;
-      }
-
-      h1,
-      h2 {
-        color: #333;
-      }
-
-      .status {
-        margin-top: 20px;
-        padding: 10px;
-        background: #e8f5e9;
-        border-radius: 4px;
-      }
-
-      .ad-container {
-        margin: 20px 0;
-        padding: 10px;
-        background: #f9f9f9;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        text-align: center;
-      }
-
-      .ad-wrapper {
-        width: 300px;
-        height: 250px;
-        margin: 0 auto;
-        background: #fff;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        padding: 10px;
+      .geist-<uniquifier > {
+        font-family: "Geist", sans-serif;
+        font-optical-sizing: auto;
+        font-weight: <weight>;
+        font-style: normal;
       }
     </style>
+    <link rel="stylesheet" href="./src/styles.css" />
   </head>
 
-  <body>
-    <h1>NewsPassID Basic Example</h1>
-    <p>This example demonstrates the basic functionality of NewsPassID.</p>
-    <div class="container">
-      <h2>Current Status</h2>
-      <div class="status" id="status">Loading NewsPassID...</div>
+  <body
+    class="bg-background text-foreground antialiased font-sans p-4 md:p-8 max-w-3xl mx-auto"
+  >
+    <header class="mb-8">
+      <h1 class="text-3xl font-semibold tracking-tight">
+        NewsPassID Basic Example
+      </h1>
+      <p class="text-muted-foreground mt-2">
+        This example demonstrates the basic functionality of NewsPassID.
+      </p>
+    </header>
 
-      <h2>Controls</h2>
-      <div>
-        <button id="get-id">Get Current ID</button>
-        <button id="get-segments">Get Segments</button>
-        <button id="clear-id">Clear ID</button>
-        <button id="manual-set-id">Set New ID</button>
-      </div>
+    <div class="space-y-8">
+      <section class="bg-card p-6 rounded-lg shadow">
+        <h2 class="text-xl font-semibold mb-4">Current Status</h2>
+        <div
+          class="bg-green-100 text-green-800 p-3 rounded-md text-sm"
+          id="status"
+        >
+          Loading NewsPassID...
+        </div>
+      </section>
 
-      <h2>Results</h2>
-      <pre id="results">No data yet.</pre>
-    </div>
+      <section class="bg-card p-6 rounded-lg shadow">
+        <h2 class="text-xl font-semibold mb-4">Controls</h2>
+        <div class="flex flex-wrap gap-3">
+          <button
+            id="get-id"
+            class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-medium"
+          >
+            Get Current ID
+          </button>
+          <button
+            id="get-segments"
+            class="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-medium"
+          >
+            Get Segments
+          </button>
+          <button
+            id="clear-id"
+            class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 h-9 px-4 py-2"
+          >
+            Clear ID
+          </button>
+          <button
+            id="manual-set-id"
+            class="bg-secondary text-secondary-foreground hover:bg-secondary/90 px-4 py-2 rounded-md text-sm font-medium"
+          >
+            Set New ID
+          </button>
+        </div>
+      </section>
 
-    <!-- Display Ad -->
-    <div class="ad-container">
-      <h3>Display Ad (300x250)</h3>
-      <div id="div-gpt-ad-1682372512510-0" class="ad-wrapper">
-        <script>
-          googletag.cmd.push(function () {
-            googletag.display("div-gpt-ad-1682372512510-0");
-          });
-        </script>
-      </div>
+      <section class="bg-card p-6 rounded-lg shadow">
+        <h2 class="text-xl font-semibold mb-4">Results</h2>
+        <pre
+          id="results"
+          class="bg-muted p-4 rounded-md text-sm overflow-x-auto"
+        >
+No data yet.</pre
+        >
+      </section>
+
+      <!-- Display Ad -->
+      <section class="bg-card p-6 rounded-lg shadow">
+        <h3 class="text-lg font-medium mb-4 text-center">
+          Display Ad (300x250)
+        </h3>
+        <div
+          id="div-gpt-ad-1682372512510-0"
+          class="w-[300px] h-[250px] mx-auto bg-muted rounded flex items-center justify-center border"
+        >
+          <script>
+            googletag.cmd.push(function () {
+              googletag.display("div-gpt-ad-1682372512510-0");
+            });
+          </script>
+        </div>
+      </section>
     </div>
 
     <script type="module" src="./src/main.ts"></script>
+    <!-- <script>
+      // Basic theme mimicking shadcn/ui
+      // You might want to expand this or use a proper Tailwind config for a real project
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              border: "hsl(214.3, 31.8%, 91.4%)",
+              input: "hsl(214.3, 31.8%, 91.4%)",
+              ring: "hsl(215, 20.2%, 65.1%)",
+              background: "hsl(0, 0%, 100%)",
+              foreground: "hsl(222.2, 84%, 4.9%)",
+              primary: {
+                DEFAULT: "hsl(222.2, 47.4%, 11.2%)",
+                foreground: "hsl(210, 40%, 98%)",
+              },
+              secondary: {
+                DEFAULT: "hsl(210, 40%, 96.1%)",
+                foreground: "hsl(222.2, 47.4%, 11.2%)",
+              },
+              destructive: {
+                DEFAULT: "hsl(0, 84.2%, 60.2%)",
+                foreground: "hsl(210, 40%, 98%)",
+              },
+              muted: {
+                DEFAULT: "hsl(210, 40%, 96.1%)",
+                foreground: "hsl(215.4, 16.3%, 46.9%)",
+              },
+              accent: {
+                DEFAULT: "hsl(210, 40%, 96.1%)",
+                foreground: "hsl(222.2, 47.4%, 11.2%)",
+              },
+              popover: {
+                DEFAULT: "hsl(0, 0%, 100%)",
+                foreground: "hsl(222.2, 84%, 4.9%)",
+              },
+              card: {
+                DEFAULT: "hsl(0, 0%, 100%)",
+                foreground: "hsl(222.2, 84%, 4.9%)",
+              },
+            },
+            borderRadius: {
+              lg: "0.5rem",
+              md: "calc(0.5rem - 2px)",
+              sm: "calc(0.5rem - 4px)",
+            },
+          },
+        },
+      };
+    </script> -->
   </body>
 </html>

@@ -1,4 +1,5 @@
 import { resolve } from "path";
+import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, type Plugin } from "vite";
 
 const watchSdkDistAndReload = (): Plugin => {
@@ -43,5 +44,5 @@ export default defineConfig({
     // e.g., port: 5173, to avoid conflict with the SDK dev server (default 3000 for SDK).
     // If not specified, Vite will automatically pick an available port.
   },
-  plugins: [watchSdkDistAndReload()],
+  plugins: [watchSdkDistAndReload(), tailwindcss()],
 });
