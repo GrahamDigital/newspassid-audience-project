@@ -118,7 +118,7 @@ const app = new Hono<{ Bindings: Bindings }>()
     try {
       const data = c.req.valid("json");
 
-      console.log("[api.handler] body", data);
+      console.info("[api.handler] body", data);
 
       // Validate ID format
       if (!isValidId(data.id)) {
@@ -179,8 +179,6 @@ const app = new Hono<{ Bindings: Bindings }>()
       setCookie(c, "newspassid", data.id, {
         path: "/",
         secure: true,
-        // When `domain` is enabled, the cookie is not set
-        // domain: new URL(c.req.header("origin") ?? "").hostname,
         httpOnly: false,
         sameSite: "none",
         expires: new Date(Date.now() + 400 * 24 * 60 * 60 * 1000),

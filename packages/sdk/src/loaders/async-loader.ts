@@ -5,30 +5,21 @@
  * without blocking page rendering.
  */
 
+import { getCookie } from "@/utils/storage";
 import type { NewsPassConfig } from "../core/types";
 
 // Retrieve configuration from global variable or use default
 const NEWSPASS_CONFIG: NewsPassConfig = window.NEWSPASS_CONFIG ?? {
   namespace: "default-publisher",
-  // lambdaEndpoint: "https://npid.gmg.io/newspassid",
   lambdaEndpoint: import.meta.env.VITE_API_URL.slice(0, -1),
 };
 
 // Initialize the queue and newspassid global object
-window.newspassid_q = window.newspassid_q ?? [];
+window.NewsPassIDQ = window.NewsPassIDQ ?? [];
 
 // Function to load the newspassid script
 (function () {
-  // log the meta env
-  console.log("[newspassid] import.meta.env", import.meta.env);
-  // Create script element
   const script = document.createElement("script");
-  // script.src =
-  //   import.meta.env.VITE_STAGE === "production"
-  //     ? "https://npid.gmg.io/examples/newspassid.js"
-  //     : import.meta.env.VITE_STAGE === "dev"
-  //       ? "https://npid-dev.gmg.io/examples/newspassid.js"
-  //       : "http://localhost:3000/newspassid.js";
   script.src = ["production", "dev"].includes(import.meta.env.VITE_STAGE)
     ? `${import.meta.env.VITE_CDN_URL}/dist/newspassid.js`
     : "http://localhost:3000/newspassid.js";
@@ -56,7 +47,7 @@ window.newspassid_q = window.newspassid_q ?? [];
     const realNewsPassID = createNewsPassIDFn(NEWSPASS_CONFIG);
 
     // Process any queued commands
-    const queue = window.newspassid_q;
+    const queue = window.NewsPassIDQ;
     if (!queue) return;
 
     // Set immediate ID if available from localStorage to prevent flicker
@@ -117,6 +108,11 @@ window.newspassid_q = window.newspassid_q ?? [];
   // Helper function to get stored ID from localStorage
   function getStoredId(): string | null {
     try {
+      const cookie = getCookie(NEWSPASS_CONFIG.storageKey ?? "newspassid");
+
+      if (cookie) {
+        return cookie;
+      }
       return localStorage.getItem(NEWSPASS_CONFIG.storageKey ?? "newspassid");
     } catch (e) {
       console.error("newspassid: Error getting stored ID", e);
