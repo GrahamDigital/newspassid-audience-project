@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 
-// import { execSync } from "node:child_process";
 import { router } from "./router";
 import { bucket } from "./storage";
 
@@ -10,8 +9,6 @@ const SNOWFLAKE_PASSWORD = new sst.Secret("SNOWFLAKE_PASSWORD");
 const SNOWFLAKE_WAREHOUSE = new sst.Secret("SNOWFLAKE_WAREHOUSE");
 const SNOWFLAKE_DATABASE = new sst.Secret("SNOWFLAKE_DATABASE");
 const SNOWFLAKE_SCHEMA = new sst.Secret("SNOWFLAKE_SCHEMA");
-
-const BRAZE_API_KEY = new sst.Secret("BRAZE_API_KEY");
 
 export const api = new sst.aws.Function("api", {
   handler: "packages/functions/src/api.handler",
@@ -36,34 +33,6 @@ export const api = new sst.aws.Function("api", {
     ID_FOLDER: "newspassid",
   },
 });
-
-// Braze MAU tracker - runs every 2 minutes
-export const brazeMauTracker =
-  $app.stage === "production"
-    ? new sst.aws.Cron("braze-mau-tracker", {
-        function: {
-          handler: "packages/functions/src/lib/braze-mau-tracker.handler",
-          runtime: "nodejs22.x",
-          timeout: "30 seconds",
-          link: [bucket, BRAZE_API_KEY],
-          environment: {
-            BRAZE_ENDPOINT: "https://rest.iad-05.braze.com",
-          },
-        },
-        schedule: "rate(2 minutes)",
-      })
-    : $app.stage !== "dev"
-      ? new sst.aws.Function("braze-mau-tracker", {
-          handler: "packages/functions/src/lib/braze-mau-tracker.handler",
-          runtime: "nodejs22.x",
-          timeout: "30 seconds",
-          link: [bucket, BRAZE_API_KEY],
-          environment: {
-            BRAZE_ENDPOINT: "https://rest.iad-05.braze.com",
-          },
-          url: true,
-        })
-      : undefined;
 
 $app.stage === "production"
   ? new sst.aws.Cron("snowflake-processor", {
