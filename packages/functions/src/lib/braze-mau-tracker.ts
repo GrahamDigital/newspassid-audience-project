@@ -38,8 +38,6 @@ class BrazeMauTracker {
   constructor() {
     this.s3 = new S3Client();
     this.bucket = Resource.data.name;
-    // These will be defined in the infrastructure
-    // this.brazeApiKey = process.env.BRAZE_API_KEY ?? "";
     this.brazeApiKey = Resource.BRAZE_API_KEY.value;
     this.brazeEndpoint = process.env.BRAZE_ENDPOINT ?? "";
     this.monthlyLimit = 6000000; // 6 million MAU limit
