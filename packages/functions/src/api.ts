@@ -101,6 +101,7 @@ const app = new Hono<{ Bindings: Bindings }>()
         "http://localhost:3000",
         "http://localhost:5173",
         "https://*.gmg.io",
+        "http://www.gmg-local.com",
         "https://www.clickondetroit.com",
         "https://www.ksat.com",
         "https://www.click2houston.com",
