@@ -52,16 +52,18 @@ export const brazeMauTracker =
         },
         schedule: "rate(2 minutes)",
       })
-    : new sst.aws.Function("braze-mau-tracker", {
-        handler: "packages/functions/src/lib/braze-mau-tracker.handler",
-        runtime: "nodejs22.x",
-        timeout: "30 seconds",
-        link: [bucket, BRAZE_API_KEY],
-        environment: {
-          BRAZE_ENDPOINT: "https://rest.iad-05.braze.com",
-        },
-        url: true,
-      });
+    : $app.stage !== "dev"
+      ? new sst.aws.Function("braze-mau-tracker", {
+          handler: "packages/functions/src/lib/braze-mau-tracker.handler",
+          runtime: "nodejs22.x",
+          timeout: "30 seconds",
+          link: [bucket, BRAZE_API_KEY],
+          environment: {
+            BRAZE_ENDPOINT: "https://rest.iad-05.braze.com",
+          },
+          url: true,
+        })
+      : undefined;
 
 $app.stage === "production"
   ? new sst.aws.Cron("snowflake-processor", {
