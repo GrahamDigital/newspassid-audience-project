@@ -5,6 +5,10 @@
 
 declare module "sst" {
   export interface Resource {
+    "BRAZE_API_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "SNOWFLAKE_ACCOUNT": {
       "type": "sst.sst.Secret"
       "value": string
@@ -30,6 +34,11 @@ declare module "sst" {
       "value": string
     }
     "api": {
+      "name": string
+      "type": "sst.aws.Function"
+      "url": string
+    }
+    "braze-mau-tracker": {
       "name": string
       "type": "sst.aws.Function"
       "url": string

@@ -158,6 +158,28 @@ const app = new Hono<{ Bindings: Bindings }>()
         }),
       );
 
+      // Create properties JSON file in separate directory for analytics
+      const propertiesData = {
+        id: data.id,
+        timestamp: data.timestamp,
+        url: data.url,
+        domain,
+        consentString: data.consentString,
+        previousId: data.previousId,
+        segments: validSegments,
+        publisherSegments: data.publisherSegments,
+        processedAt: new Date().toISOString(),
+      };
+
+      await s3.send(
+        new PutObjectCommand({
+          Bucket: Resource.data.name,
+          Key: `${ID_FOLDER}/properties/${domain}/${data.id}/${data.timestamp}.json`,
+          ContentType: "application/json",
+          Body: JSON.stringify(propertiesData),
+        }),
+      );
+
       // If there's a previous ID, create a mapping
       if (data.previousId) {
         const mappingContent = [

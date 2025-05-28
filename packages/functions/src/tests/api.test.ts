@@ -70,7 +70,11 @@ describe("NewsPassID API", () => {
     });
 
     expect(response.status).toBe(200);
-    const data = await response.json();
+    const data = (await response.json()) as {
+      success: boolean;
+      id: string;
+      segments: string[];
+    };
     expect(data).toEqual({
       success: true,
       id: "gmg-12345678-1234-4123-8123-123456789012",
@@ -78,12 +82,21 @@ describe("NewsPassID API", () => {
     });
 
     // Verify S3 calls
-    expect(mockS3Client.send).toHaveBeenCalledTimes(3); // 1 get + 2 puts
+    expect(mockS3Client.send).toHaveBeenCalledTimes(4); // 1 get + 3 puts (csv, json, mapping)
     expect(PutObjectCommand).toHaveBeenCalledWith(
       expect.objectContaining({
         Bucket: "test-bucket",
         Key: "newspassid/publisher/example.com/gmg-12345678-1234-4123-8123-123456789012/1234567890.csv",
         ContentType: "text/csv",
+      }),
+    );
+
+    // Verify properties JSON file is created
+    expect(PutObjectCommand).toHaveBeenCalledWith(
+      expect.objectContaining({
+        Bucket: "test-bucket",
+        Key: "newspassid/properties/example.com/gmg-12345678-1234-4123-8123-123456789012/1234567890.json",
+        ContentType: "application/json",
       }),
     );
   });
@@ -101,7 +114,10 @@ describe("NewsPassID API", () => {
     });
 
     expect(response.status).toBe(400);
-    const data = await response.json();
+    const data = (await response.json()) as {
+      success: boolean;
+      error: unknown;
+    };
     expect(data).toEqual({
       success: false,
       error: expect.objectContaining({
@@ -132,7 +148,10 @@ describe("NewsPassID API", () => {
     });
 
     expect(response.status).toBe(400);
-    const data = await response.json();
+    const data = (await response.json()) as {
+      success: boolean;
+      error: string;
+    };
     expect(data).toEqual({
       success: false,
       error: "Invalid ID format",
@@ -160,7 +179,10 @@ describe("NewsPassID API", () => {
     });
 
     expect(response.status).toBe(500);
-    const data = await response.json();
+    const data = (await response.json()) as {
+      success: boolean;
+      error: string;
+    };
     expect(data).toEqual({
       success: false,
       error: "Internal server error",
