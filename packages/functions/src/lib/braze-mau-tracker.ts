@@ -1,16 +1,23 @@
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import type { APIGatewayProxyResult } from "aws-lambda";
 import { Resource } from "sst";
+import { z } from "zod";
 
-interface BrazeMauDataPoint {
-  time: string; // YYYY-MM-DD format
-  mau: number;
-}
+// Zod schemas for validation
+const BrazeMauDataPointSchema = z.object({
+  time: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Time must be in YYYY-MM-DD format"),
+  mau: z.number().min(0, "MAU must be a non-negative number"),
+});
 
-interface BrazeMauResponse {
-  data: BrazeMauDataPoint[];
-  message: string;
-}
+const BrazeMauResponseSchema = z.object({
+  data: z.array(BrazeMauDataPointSchema),
+  message: z.string(),
+});
+
+type BrazeMauDataPoint = z.infer<typeof BrazeMauDataPointSchema>;
+type BrazeMauResponse = z.infer<typeof BrazeMauResponseSchema>;
 
 interface PacingProjection {
   currentMau: number;
@@ -63,7 +70,24 @@ class BrazeMauTracker {
       );
     }
 
-    return (await response.json()) as BrazeMauResponse;
+    const rawData = await response.json();
+
+    // Validate response with Zod schema
+    const validationResult = BrazeMauResponseSchema.safeParse(rawData);
+
+    if (!validationResult.success) {
+      console.error(
+        "Braze API response validation failed:",
+        validationResult.error.issues,
+      );
+      throw new Error(
+        `Invalid response format from Braze API: ${validationResult.error.issues
+          .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+          .join(", ")}`,
+      );
+    }
+
+    return validationResult.data;
   }
 
   /**
