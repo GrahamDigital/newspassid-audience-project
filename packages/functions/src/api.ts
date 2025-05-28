@@ -184,6 +184,9 @@ const app = new Hono<{ Bindings: Bindings }>()
         expires: new Date(Date.now() + 400 * 24 * 60 * 60 * 1000),
       });
 
+      // query braze for user, set last visited date and user alias
+      // check if the user is in a braze segment that will allow for the sdk to load
+
       return c.json({
         success: true,
         id: data.id,

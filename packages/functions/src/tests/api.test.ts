@@ -29,8 +29,8 @@ vi.mock("sst", () => {
 });
 
 // Define the type for the client based on your app's routes
-type AppType = typeof app;
-type ClientType = ReturnType<typeof testClient<AppType>>;
+// type AppType = typeof app;
+// type ClientType = ReturnType<typeof testClient<AppType>>;
 
 describe("NewsPassID API", () => {
   beforeEach(() => {
@@ -89,7 +89,7 @@ describe("NewsPassID API", () => {
   });
 
   it("should handle missing required fields", async () => {
-    const client = testClient(app) as ClientType;
+    const client = testClient(app);
 
     const response = await client.newspassid.$post({
       // @ts-expect-error - we're omitting the required properties on purpose
@@ -120,7 +120,7 @@ describe("NewsPassID API", () => {
   });
 
   it("should handle invalid ID format", async () => {
-    const client = testClient(app) as ClientType;
+    const client = testClient(app);
 
     const response = await client.newspassid.$post({
       json: {
@@ -148,7 +148,7 @@ describe("NewsPassID API", () => {
       return Promise.resolve({});
     });
 
-    const client = testClient(app) as ClientType;
+    const client = testClient(app);
 
     const response = await client.newspassid.$post({
       json: {

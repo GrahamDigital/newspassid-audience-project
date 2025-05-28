@@ -30,14 +30,6 @@ export const api = new sst.aws.Function("api", {
           cors: false,
         },
       }),
-  // hook: {
-  //   async postbuild(out) {
-  //     execSync("pnpm sentry-cli sourcemaps inject -i node_modules .", {
-  //       stdio: "inherit",
-  //       cwd: out,
-  //     });
-  //   },
-  // },
   environment: {
     ID_FOLDER: "newspassid",
   },

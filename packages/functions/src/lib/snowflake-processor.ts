@@ -1,8 +1,8 @@
 // import AWS from "aws-sdk";
+import type { ListObjectsV2CommandInput } from "@aws-sdk/client-s3";
 import {
   GetObjectCommand,
   ListObjectsV2Command,
-  ListObjectsV2CommandInput,
   S3Client,
 } from "@aws-sdk/client-s3";
 import type { APIGatewayProxyResult } from "aws-lambda";
