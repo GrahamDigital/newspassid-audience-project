@@ -13,6 +13,8 @@ export const brazeMauTracker =
           link: [bucket, BRAZE_API_KEY],
           environment: {
             BRAZE_ENDPOINT: "https://rest.iad-05.braze.com",
+            MONTHLY_LIMIT: "6000000",
+            ALERT_THRESHOLD: "0.8",
           },
         },
         schedule: "rate(2 minutes)",
