@@ -12,8 +12,12 @@ import { setCookie } from "hono/cookie";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { Resource } from "sst";
-import { logRecordSchema, SegmentRecordSchema } from "./lib/schema/npid";
-import { isValidId } from "./lib/utils";
+import {
+  ConfigSchema,
+  logRecordSchema,
+  SegmentRecordSchema,
+} from "@/lib/schema/npid";
+import { isValidId } from "@/lib/utils";
 
 interface Bindings {
   event: LambdaEvent;
@@ -34,6 +38,31 @@ function getDomainFromUrl(url: string): string {
   } catch {
     return "unknown";
   }
+}
+
+async function getConfig() {
+  const response = await s3.send(
+    new GetObjectCommand({
+      Bucket: Resource.data.name,
+      Key: "config.json",
+    }),
+  );
+
+  if (!response.Body) {
+    return null;
+  }
+
+  const content = await response.Body.transformToString();
+  const data = await JSON.parse(content);
+
+  const parsedData = ConfigSchema.safeParse(data);
+
+  if (!parsedData.success) {
+    console.error("Error parsing config:", parsedData.error);
+    throw new Error("Error parsing config");
+  }
+
+  return parsedData.data;
 }
 
 /**
@@ -90,6 +119,27 @@ async function getValidSegments(segmentsFile: string): Promise<string[]> {
   }
 }
 
+async function getPageviews({ id, domain }: { id: string; domain: string }) {
+  const response = await s3.send(
+    new GetObjectCommand({
+      Bucket: Resource.data.name,
+      Key: `${ID_FOLDER}/publisher/${domain}/${id}/pageviews.csv`,
+    }),
+  );
+
+  if (!response.Body) {
+    return 0;
+  }
+
+  const content = await response.Body.transformToString();
+  const records = parse(content, {
+    columns: true,
+    skip_empty_lines: true,
+  }) as unknown;
+
+  return records.length;
+}
+
 const app = new Hono<{ Bindings: Bindings }>()
   .use(
     cors({
@@ -131,9 +181,19 @@ const app = new Hono<{ Bindings: Bindings }>()
       // Get domain from URL
       const domain = getDomainFromUrl(data.url);
 
+      // Get config
+      const config = await getConfig();
+
+      console.info("[api.handler] config", config);
+
       // Get valid segments
       const segmentsFile = `${ID_FOLDER}/segments.csv`;
       const validSegments = await getValidSegments(segmentsFile);
+
+      // Check how many pageviews the user has had in the last 30 days
+      const pageviews = await getPageviews({ id: data.id, domain });
+
+      console.info("[api.handler] pageviews", pageviews);
 
       // Prepare CSV content
       const csvContent = [
@@ -187,7 +247,7 @@ const app = new Hono<{ Bindings: Bindings }>()
         await s3.send(
           new PutObjectCommand({
             Bucket: Resource.data.name,
-            Key: `${ID_FOLDER}/publisher/mappings/${data.previousId}.csv`,
+            Key: `${ID_FOLDER}/publisher/${domain}/mappings/${data.previousId}.csv`,
             ContentType: "text/csv",
             Body: mappingContent,
           }),

@@ -80,7 +80,7 @@ export class NewsPassIDImpl {
        * (like if someone logs in, their CDP can associate the existing NPID with their email, etc… ,
        *  and then enrich the snowflake table with the attributes)
        */
-      // previousId: storedId && userId !== storedId ? storedId : undefined,
+      previousId: storedId && userId !== storedId ? storedId : undefined,
       publisherSegments,
     };
 

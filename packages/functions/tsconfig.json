@@ -12,5 +12,5 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["../../reset.d.ts"]
+  "include": ["../../reset.d.ts", "src/**/*", "./sst-env.d.ts"]
 }

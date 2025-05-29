@@ -16,5 +16,11 @@ export const SegmentRecordSchema = z.array(
   }),
 );
 
+export const ConfigSchema = z.object({
+  pageViewThreshold: z.number(),
+  alwaysLoadSDKAllowList: z.array(z.string()),
+});
+
 export type LogRecord = z.infer<typeof logRecordSchema>;
 export type SegmentRecord = z.infer<typeof SegmentRecordSchema>;
+export type Config = z.infer<typeof ConfigSchema>;

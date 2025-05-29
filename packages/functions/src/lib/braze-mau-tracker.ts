@@ -1,8 +1,8 @@
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import type { APIGatewayProxyResult } from "aws-lambda";
 import { Resource } from "sst";
-import type { BrazeMauDataPoint, BrazeMauResponse } from "./schema/braze";
-import { BrazeMauResponseSchema } from "./schema/braze";
+import type { BrazeMauDataPoint, BrazeMauResponse } from "@/lib/schema/braze";
+import { BrazeMauResponseSchema } from "@/lib/schema/braze";
 
 interface PacingProjection {
   currentMau: number;
@@ -32,7 +32,7 @@ class BrazeMauTracker {
     this.bucket = Resource.data.name;
     this.brazeApiKey = Resource.BRAZE_API_KEY.value;
     this.brazeEndpoint = process.env.BRAZE_ENDPOINT ?? "";
-    this.monthlyLimit = 6000000; // 6 million MAU limit
+    this.monthlyLimit = Number(process.env.MONTHLY_LIMIT ?? "6000000");
   }
 
   /**
@@ -139,6 +139,11 @@ class BrazeMauTracker {
 
     // Determine if we're on pace (under the limit)
     const isOnPace = projectedEndOfMonthMau <= this.monthlyLimit;
+
+    const alertThreshold = parseFloat(process.env.ALERT_THRESHOLD ?? "0.8");
+    const isAlertThresholdMet = pacingPercentage >= alertThreshold;
+
+    // TODO: send alert if alert threshold is met
 
     return {
       currentMau,
