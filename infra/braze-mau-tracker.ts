@@ -17,7 +17,8 @@ export const brazeMauTracker =
         },
         schedule: "rate(2 minutes)",
       })
-    : $app.stage !== "dev"
+    : // for local development, expose the function as an API endpoint
+      $app.stage !== "dev"
       ? new sst.aws.Function("braze-mau-tracker", {
           handler: "packages/functions/src/lib/braze-mau-tracker.handler",
           runtime: "nodejs22.x",

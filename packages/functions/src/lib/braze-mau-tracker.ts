@@ -1,23 +1,8 @@
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import type { APIGatewayProxyResult } from "aws-lambda";
 import { Resource } from "sst";
-import { z } from "zod";
-
-// Zod schemas for validation
-const BrazeMauDataPointSchema = z.object({
-  time: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Time must be in YYYY-MM-DD format"),
-  mau: z.number().min(0, "MAU must be a non-negative number"),
-});
-
-const BrazeMauResponseSchema = z.object({
-  data: z.array(BrazeMauDataPointSchema),
-  message: z.string(),
-});
-
-type BrazeMauDataPoint = z.infer<typeof BrazeMauDataPointSchema>;
-type BrazeMauResponse = z.infer<typeof BrazeMauResponseSchema>;
+import type { BrazeMauDataPoint, BrazeMauResponse } from "./schema/braze";
+import { BrazeMauResponseSchema } from "./schema/braze";
 
 interface PacingProjection {
   currentMau: number;

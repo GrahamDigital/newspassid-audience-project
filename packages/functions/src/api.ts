@@ -12,7 +12,7 @@ import { setCookie } from "hono/cookie";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { Resource } from "sst";
-import { z } from "zod";
+import { logRecordSchema, SegmentRecordSchema } from "./lib/schema/npid";
 import { isValidId } from "./lib/utils";
 
 interface Bindings {
@@ -22,20 +22,6 @@ interface Bindings {
 
 const s3 = new S3Client();
 const ID_FOLDER = process.env.ID_FOLDER ?? "newspassid";
-
-const logRecordSchema = z.object({
-  id: z.string(),
-  timestamp: z.number(),
-  url: z.string(),
-  consentString: z.string(),
-  previousId: z.string().optional(),
-  publisherSegments: z.array(z.string()).optional(),
-});
-
-interface SegmentRecord {
-  segments: string;
-  expire_timestamp: number;
-}
 
 /**
  * Extracts and normalizes the domain from a URL.
@@ -67,14 +53,24 @@ async function getValidSegments(segmentsFile: string): Promise<string[]> {
     }
 
     const content = await response.Body.transformToString();
-    const records = parse(content, {
+    const rawRecords = parse(content, {
       columns: true,
       skip_empty_lines: true,
-    }) as SegmentRecord[];
+    }) as unknown;
+
+    // validate the csv parsing with zod
+    const parsedRecords = SegmentRecordSchema.safeParse(rawRecords);
+
+    if (!parsedRecords.success) {
+      console.error("Error parsing segments:", parsedRecords.error);
+      throw new Error("Error parsing segments");
+    }
+
+    const records = parsedRecords.data;
 
     const now = Date.now();
     return records
-      .filter((record) => record.expire_timestamp > now)
+      .filter((record) => Number(record.expire_timestamp) > now)
       .map((record) => record.segments);
   } catch (error) {
     // If the file doesn't exist yet, return an empty array instead of throwing an error
