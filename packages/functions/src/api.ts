@@ -1,10 +1,5 @@
-import {
-  GetObjectCommand,
-  PutObjectCommand,
-  S3Client,
-} from "@aws-sdk/client-s3";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { zValidator } from "@hono/zod-validator";
-import { parse } from "csv-parse/sync";
 import { Hono } from "hono";
 import type { LambdaContext, LambdaEvent } from "hono/aws-lambda";
 import { handle } from "hono/aws-lambda";
@@ -12,133 +7,21 @@ import { setCookie } from "hono/cookie";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { Resource } from "sst";
+import { s3 } from "@/lib/s3";
+import { logRecordSchema } from "@/lib/schema/npid";
 import {
-  ConfigSchema,
-  logRecordSchema,
-  SegmentRecordSchema,
-} from "@/lib/schema/npid";
-import { isValidId } from "@/lib/utils";
+  getDomainFromUrl,
+  getValidSegments,
+  isValidId,
+  shouldLoadSDK,
+} from "@/lib/utils";
 
 interface Bindings {
   event: LambdaEvent;
   lambdaContext: LambdaContext;
 }
 
-const s3 = new S3Client();
 const ID_FOLDER = process.env.ID_FOLDER ?? "newspassid";
-
-/**
- * Extracts and normalizes the domain from a URL.
- * Removes 'www.' prefix and handles invalid URLs gracefully.
- */
-function getDomainFromUrl(url: string): string {
-  try {
-    const domain = new URL(url).hostname;
-    return domain.replace(/^www\./, "");
-  } catch {
-    return "unknown";
-  }
-}
-
-async function getConfig() {
-  const response = await s3.send(
-    new GetObjectCommand({
-      Bucket: Resource.data.name,
-      Key: "config.json",
-    }),
-  );
-
-  if (!response.Body) {
-    return null;
-  }
-
-  const content = await response.Body.transformToString();
-  const data = await JSON.parse(content);
-
-  const parsedData = ConfigSchema.safeParse(data);
-
-  if (!parsedData.success) {
-    console.error("Error parsing config:", parsedData.error);
-    throw new Error("Error parsing config");
-  }
-
-  return parsedData.data;
-}
-
-/**
- * Reads and filters segments from a CSV file based on expiration timestamps.
- */
-async function getValidSegments(segmentsFile: string): Promise<string[]> {
-  try {
-    const response = await s3.send(
-      new GetObjectCommand({
-        Bucket: Resource.data.name,
-        Key: segmentsFile,
-      }),
-    );
-
-    if (!response.Body) {
-      return [];
-    }
-
-    const content = await response.Body.transformToString();
-    const rawRecords = parse(content, {
-      columns: true,
-      skip_empty_lines: true,
-    }) as unknown;
-
-    // validate the csv parsing with zod
-    const parsedRecords = SegmentRecordSchema.safeParse(rawRecords);
-
-    if (!parsedRecords.success) {
-      console.error("Error parsing segments:", parsedRecords.error);
-      throw new Error("Error parsing segments");
-    }
-
-    const records = parsedRecords.data;
-
-    const now = Date.now();
-    return records
-      .filter((record) => Number(record.expire_timestamp) > now)
-      .map((record) => record.segments);
-  } catch (error) {
-    // If the file doesn't exist yet, return an empty array instead of throwing an error
-    if (
-      error instanceof Error &&
-      "Code" in error &&
-      error.Code === "NoSuchKey"
-    ) {
-      console.info(
-        `Segments file ${segmentsFile} does not exist yet. Returning empty array.`,
-      );
-      return [];
-    }
-
-    console.error("Error reading segments:", error);
-    throw error; // Re-throw other errors to be handled by the handler
-  }
-}
-
-async function getPageviews({ id, domain }: { id: string; domain: string }) {
-  const response = await s3.send(
-    new GetObjectCommand({
-      Bucket: Resource.data.name,
-      Key: `${ID_FOLDER}/publisher/${domain}/${id}/pageviews.csv`,
-    }),
-  );
-
-  if (!response.Body) {
-    return 0;
-  }
-
-  const content = await response.Body.transformToString();
-  const records = parse(content, {
-    columns: true,
-    skip_empty_lines: true,
-  }) as unknown;
-
-  return records.length;
-}
 
 const app = new Hono<{ Bindings: Bindings }>()
   .use(
@@ -181,19 +64,11 @@ const app = new Hono<{ Bindings: Bindings }>()
       // Get domain from URL
       const domain = getDomainFromUrl(data.url);
 
-      // Get config
-      const config = await getConfig();
-
-      console.info("[api.handler] config", config);
+      console.info("[api.handler] domain", domain);
 
       // Get valid segments
       const segmentsFile = `${ID_FOLDER}/segments.csv`;
       const validSegments = await getValidSegments(segmentsFile);
-
-      // Check how many pageviews the user has had in the last 30 days
-      const pageviews = await getPageviews({ id: data.id, domain });
-
-      console.info("[api.handler] pageviews", pageviews);
 
       // Prepare CSV content
       const csvContent = [
@@ -263,12 +138,15 @@ const app = new Hono<{ Bindings: Bindings }>()
         expires: new Date(Date.now() + 400 * 24 * 60 * 60 * 1000),
       });
 
-      // query braze for user, set last visited date and user alias
-      // check if the user is in a braze segment that will allow for the sdk to load
+      const loadSdk = await shouldLoadSDK({
+        id: data.id,
+        url: data.url,
+      });
 
       return c.json({
         success: true,
         id: data.id,
+        loadSdk,
         segments: validSegments,
       });
     } catch (error) {

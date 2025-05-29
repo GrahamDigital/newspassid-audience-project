@@ -1,0 +1,10 @@
+{
+  "pageViewThreshold": 2,
+  "alwaysLoadSDKAllowList": [
+    "http://localhost:5173/examples",
+    "https://npid.gmg.io",
+    "https://npid-dev.gmg.io",
+    "https://www.clickondetroit.com/mipics/",
+    "https://www.clickondetroit.com/weather/"
+  ]
+}
