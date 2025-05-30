@@ -18,7 +18,7 @@ export const demo = new sst.aws.StaticSite("demo", {
       ? api.url
       : api.url.apply((url) => `${url}newspassid`),
     VITE_CDN_URL: ["production", "dev"].includes($app.stage)
-      ? sdk.url.apply((url) => `${url}/dist`)
+      ? sdk.url
       : "http://localhost:3000",
   },
 });
