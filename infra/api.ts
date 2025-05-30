@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 
-// import { execSync } from "node:child_process";
 import { router } from "./router";
 import { bucket } from "./storage";
 

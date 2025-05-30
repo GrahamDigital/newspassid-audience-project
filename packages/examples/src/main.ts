@@ -14,9 +14,7 @@ head.appendChild(script);
 // Publisher configuration
 window.NEWSPASS_CONFIG = {
   namespace: "gmg",
-  lambdaEndpoint: ["production", "dev"].includes(import.meta.env.VITE_STAGE)
-    ? import.meta.env.VITE_API_URL
-    : `${import.meta.env.VITE_API_URL}newspassid`,
+  lambdaEndpoint: import.meta.env.VITE_API_URL,
 };
 
 // Initialize the queue and NewsPassID global object

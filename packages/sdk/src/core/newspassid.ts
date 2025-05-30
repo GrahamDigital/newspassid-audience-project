@@ -74,6 +74,12 @@ export class NewsPassIDImpl {
       timestamp: Date.now(),
       url: window.location.href,
       consentString: this.consentString ?? "",
+      /**
+       * TODO: get clarification from MN on this
+       * Araz — the way I see it, all the enrichment stuff should happen off-line
+       * (like if someone logs in, their CDP can associate the existing NPID with their email, etc… ,
+       *  and then enrich the snowflake table with the attributes)
+       */
       previousId: storedId && userId !== storedId ? storedId : undefined,
       publisherSegments,
     };
