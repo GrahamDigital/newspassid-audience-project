@@ -16,9 +16,6 @@ window.NEWSPASS_CONFIG = {
   lambdaEndpoint: import.meta.env.VITE_API_URL,
 };
 
-// Initialize the queue and NewsPassID global object
-window.NewsPassIDQ = window.NewsPassIDQ ?? [];
-
 // DOM elements
 const statusEl = document.getElementById("status") as HTMLDivElement;
 const resultsEl = document.getElementById("results") as HTMLDivElement;
@@ -34,6 +31,8 @@ const setIdBtn = document.getElementById("manual-set-id") as HTMLButtonElement;
  * TODO: This doesn't do anything, we should probably remove the event listener
  */
 window.addEventListener("newspass_segments_ready", (event) => {
+  statusEl.textContent = "NewsPassID is active and segments are loaded.";
+
   const { detail } = event as CustomEvent<NewsPassSegmentsReadyDetail>;
   console.info("newspass_segments_ready", detail);
 });

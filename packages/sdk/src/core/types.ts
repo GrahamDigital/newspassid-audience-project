@@ -99,7 +99,6 @@ declare global {
   interface Window {
     __gpp?: GPP;
     newspassid?: NewsPassID;
-    NewsPassIDQ?: [string, ...unknown[]][];
     newspass_segments?: string[];
     NEWSPASS_CONFIG?: NewsPassConfig;
     createNewsPassID?: (config: NewsPassConfig) => NewsPassID;
