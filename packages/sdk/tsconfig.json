@@ -17,6 +17,6 @@
     },
     "types": ["vite/client", "vitest/globals", "@types/google-publisher-tag"]
   },
-  "include": ["src/**/*.ts", "../../reset.d.ts"],
+  "include": ["src/**/*.ts", "../../reset.d.ts", "global.d.ts"],
   "exclude": ["node_modules", "dist"]
 }

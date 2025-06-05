@@ -152,6 +152,12 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>()
           { id: "url", title: "url" },
           { id: "consentString", title: "consentString" },
           { id: "ip", title: "ip" },
+          { id: "userAgent", title: "userAgent" },
+          { id: "platform", title: "platform" },
+          { id: "canonicalUrl", title: "canonicalUrl" },
+          { id: "title", title: "title" },
+          { id: "description", title: "description" },
+          { id: "keywords", title: "keywords" },
         ],
       });
 
@@ -163,6 +169,12 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>()
           url: data.url,
           consentString: data.consentString,
           ip,
+          userAgent,
+          platform: data.platform,
+          canonicalUrl: data.canonicalUrl,
+          title: data.title,
+          description: data.description,
+          keywords: data.keywords,
         },
       ]);
 
@@ -186,13 +198,19 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>()
 
       // Create properties JSON file in separate directory for analytics
       const propertiesData = {
-        id: data.id,
-        timestamp: data.timestamp,
-        url: data.url,
-        domain,
-        ip,
+        canonicalUrl: data.canonicalUrl,
         consentString: data.consentString,
+        description: data.description,
+        domain,
+        id: data.id,
+        ip,
+        keywords: data.keywords,
+        platform: data.platform,
         processedAt: new Date().toISOString(),
+        timestamp: data.timestamp,
+        title: data.title,
+        url: data.url,
+        userAgent,
       };
 
       await s3.send(

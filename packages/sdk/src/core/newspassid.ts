@@ -70,6 +70,21 @@ export class NewsPassIDImpl {
       timestamp: Date.now(),
       url: window.location.href,
       consentString: this.consentString ?? "",
+      userAgent: navigator.userAgent,
+      platform: navigator.userAgentData?.platform ?? undefined,
+      canonicalUrl: window.location.href,
+      title:
+        document
+          .querySelector("meta[property='og:title']")
+          ?.getAttribute("content") ?? undefined,
+      description:
+        document
+          .querySelector("meta[property='og:description']")
+          ?.getAttribute("content") ?? undefined,
+      keywords:
+        document
+          .querySelector("meta[name='keywords']")
+          ?.getAttribute("content") ?? undefined,
     };
 
     try {

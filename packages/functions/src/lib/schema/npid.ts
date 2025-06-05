@@ -5,6 +5,12 @@ export const logRecordSchema = z.object({
   timestamp: z.number(),
   url: z.string(),
   consentString: z.string(),
+  userAgent: z.string().optional(),
+  platform: z.string().optional(),
+  canonicalUrl: z.string().optional(),
+  title: z.string().optional(),
+  description: z.string().optional(),
+  keywords: z.string().optional(),
 });
 
 export const SegmentRecordSchema = z.array(

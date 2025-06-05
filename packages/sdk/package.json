@@ -27,6 +27,7 @@
     "@types/google-publisher-tag": "^1.20250428.0",
     "@types/node": "^22.15.13",
     "happy-dom": "^17.4.6",
+    "user-agent-data-types": "^0.4.2",
     "vite": "^6.3.5",
     "vite-plugin-dts": "^4.5.3",
     "vite-tsconfig-paths": "^5.1.4",

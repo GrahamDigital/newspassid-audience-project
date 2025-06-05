@@ -84,13 +84,22 @@ class BrazeMauTracker {
     }
 
     // Sort data by date to ensure chronological order
-    const sortedData = mauData.sort(
+    let sortedData = mauData.sort(
       (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime(),
     );
 
     const latestData = sortedData[sortedData.length - 1];
-    const currentDate = new Date(latestData.time);
-    const currentMau = latestData.mau;
+    let currentDate = new Date(latestData.time);
+    let currentMau = latestData.mau;
+
+    // sometimes the data from the current day is 0, if it is we need to use the previous day's data
+    if (currentMau === 0) {
+      const previousDay = sortedData[sortedData.length - 2];
+      currentMau = previousDay.mau;
+      currentDate = new Date(previousDay.time);
+      // remove the current day from the data
+      sortedData = sortedData.filter((point) => point.time !== latestData.time);
+    }
 
     // Calculate days in current month
     const lastDayOfMonth = new Date(
@@ -105,6 +114,7 @@ class BrazeMauTracker {
     const daysRemaining = daysInMonth - daysElapsed;
 
     // Calculate daily growth rate from available data
+    // If the current date is 0 we need to exclude it from the calculation
     const currentMonthData = sortedData.filter((point) => {
       const pointDate = new Date(point.time);
       return (

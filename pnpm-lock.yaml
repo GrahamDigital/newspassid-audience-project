@@ -163,6 +163,9 @@ importers:
       happy-dom:
         specifier: ^17.4.6
         version: 17.4.6
+      user-agent-data-types:
+        specifier: ^0.4.2
+        version: 0.4.2
       vite:
         specifier: ^6.3.5
         version: 6.3.5(@types/node@22.15.14)(jiti@2.4.2)(lightningcss@1.29.2)(tsx@4.19.4)
@@ -3037,6 +3040,9 @@ packages:
 
   url@0.10.3:
     resolution: {integrity: sha512-hzSUW2q06EqL1gKM/a+obYHLIO6ct2hwPuviqTTOcfFVc61UbfJ2Q32+uGL/HCPxKqrdGB5QUwIe7UqlDgwsOQ==}
+
+  user-agent-data-types@0.4.2:
+    resolution: {integrity: sha512-jXep3kO/dGNmDOkbDa8ccp4QArgxR4I76m3QVcJ1aOF0B9toc+YtSXtX5gLdDTZXyWlpQYQrABr6L1L2GZOghw==}
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
@@ -6722,6 +6728,8 @@ snapshots:
     dependencies:
       punycode: 1.3.2
       querystring: 0.2.0
+
+  user-agent-data-types@0.4.2: {}
 
   util-deprecate@1.0.2: {}
 

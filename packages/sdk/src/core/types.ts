@@ -56,6 +56,8 @@ export interface NewsPassConfig {
   namespace: string;
   /** URL endpoint for the NewsPassID backend service */
   lambdaEndpoint: string;
+  /** URL Endpoint for the webhook post-processing */
+  webhookEndpoint?: string;
   /** Custom storage key for localStorage (default: 'newspassid') */
   storageKey?: string;
   /** Whether to inject segment meta tags in the head (default: true) */
@@ -71,11 +73,28 @@ export interface IdPayload {
   url: string;
   /** User consent string (required) */
   consentString: string;
+  /** User agent */
+  userAgent?: string;
+  /** Platform */
+  platform?: string;
+  /** Canonical URL */
+  canonicalUrl?: string;
+  /** Page title */
+  title?: string;
+  /** Page description */
+  description?: string;
+  /** Page keywords */
+  keywords?: string;
 }
 
 export interface SegmentResponse {
+  /** The NewsPassID */
   id: string;
+  /** Whether to load the SDK */
+  loadSdk: boolean;
+  /** Publisher segments */
   segments: string[];
+  /** Whether the request was successful */
   success: boolean;
 }
 

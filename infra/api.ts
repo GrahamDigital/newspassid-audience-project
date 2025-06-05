@@ -34,6 +34,27 @@ export const api = new sst.aws.Function("api", {
   },
 });
 
+// export const webhook = new sst.aws.Function("webhook", {
+//   handler: "packages/functions/src/lib/webhook.handler",
+//   runtime: "nodejs22.x",
+//   link: [bucket],
+//   ...(["production", "dev"].includes($app.stage)
+//     ? {
+//         url: {
+//           router: {
+//             instance: router,
+//             path: "/newspassid/webhook",
+//           },
+//           cors: false,
+//         },
+//       }
+//     : {
+//         url: {
+//           cors: false,
+//         },
+//       }),
+// });
+
 $app.stage === "production"
   ? new sst.aws.Cron("snowflake-processor", {
       function: {
