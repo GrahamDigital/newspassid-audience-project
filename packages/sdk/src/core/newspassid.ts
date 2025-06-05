@@ -171,13 +171,13 @@ export class NewsPassIDImpl {
     // Remove any existing meta tags first
     this.removeSegmentMetaTags();
 
-    // Add new meta tags for each segment
-    Object.entries(this.segmentKeyValue).forEach(([key, value]) => {
+    // Add a single meta tag with all segments
+    if (this.segments.length > 0) {
       const meta = document.createElement("meta");
-      meta.setAttribute("name", `newspass_segment_${key}`);
-      meta.setAttribute("content", value);
+      meta.setAttribute("name", "npid_segments");
+      meta.setAttribute("content", this.segments.join(","));
       document.head.appendChild(meta);
-    });
+    }
   }
 
   /**
@@ -185,7 +185,7 @@ export class NewsPassIDImpl {
    */
   private removeSegmentMetaTags(): void {
     const existingTags = document.head.querySelectorAll(
-      'meta[name^="newspass_segment_"]',
+      'meta[name="npid_segments"]',
     );
     existingTags.forEach((tag) => {
       tag.remove();
