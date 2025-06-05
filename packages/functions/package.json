@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "test": "vitest"
+    "test": "sst shell vitest"
   },
   "dependencies": {
     "@aws-sdk/client-api-gateway": "^3.803.0",
@@ -24,6 +24,7 @@
     "happy-dom": "^17.4.6",
     "memfs": "^4.17.1",
     "typescript": "^5.8.3",
+    "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.1.3"
   }
 }

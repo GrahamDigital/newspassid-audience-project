@@ -17,7 +17,7 @@
     "build:async-loader": "vite build --mode async",
     "build:library": "vite build",
     "dev": "vite",
-    "test": "vitest"
+    "test": "sst shell vitest"
   },
   "dependencies": {
     "sst": "*",
