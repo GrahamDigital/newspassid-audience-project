@@ -151,10 +151,7 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>()
           { id: "timestamp", title: "timestamp" },
           { id: "url", title: "url" },
           { id: "consentString", title: "consentString" },
-          { id: "previousId", title: "previousId" },
           { id: "ip", title: "ip" },
-          { id: "segments", title: "segments" },
-          { id: "publisherSegments", title: "publisherSegments" },
         ],
       });
 
@@ -165,10 +162,7 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>()
           timestamp: data.timestamp,
           url: data.url,
           consentString: data.consentString,
-          previousId: data.previousId,
           ip,
-          segments: validSegments,
-          publisherSegments: data.publisherSegments,
         },
       ]);
 
@@ -198,9 +192,6 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>()
         domain,
         ip,
         consentString: data.consentString,
-        previousId: data.previousId,
-        segments: validSegments,
-        publisherSegments: data.publisherSegments,
         processedAt: new Date().toISOString(),
       };
 
@@ -212,23 +203,6 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>()
           Body: JSON.stringify(propertiesData),
         }),
       );
-
-      // If there's a previous ID, create a mapping
-      if (data.previousId) {
-        const mappingContent = [
-          "oldId,newId,timestamp",
-          `"${data.previousId}","${data.id}",${data.timestamp}`,
-        ].join("\n");
-
-        await s3.send(
-          new PutObjectCommand({
-            Bucket: Resource.data.name,
-            Key: `${ID_FOLDER}/publisher/${domain}/mappings/${data.previousId}.csv`,
-            ContentType: "text/csv",
-            Body: mappingContent,
-          }),
-        );
-      }
 
       // set cookie
       setCookie(c, "newspassid", data.id, {

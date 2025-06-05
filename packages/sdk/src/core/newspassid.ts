@@ -33,14 +33,9 @@ export class NewsPassIDImpl {
   /**
    * Set or create a NewsPassID
    * @param id Optional ID to use
-   * @param publisherSegments Optional array of publisher segment IDs
    * @returns Promise resolving to the ID
    */
-  async setID(
-    id?: string,
-    publisherSegments?: string[],
-    generateNewId?: boolean,
-  ): Promise<string> {
+  async setID(id?: string, generateNewId?: boolean): Promise<string> {
     const storageKey = this.config.storageKey ?? "newspassid";
     const storedId = getStoredId(storageKey);
 
@@ -75,14 +70,6 @@ export class NewsPassIDImpl {
       timestamp: Date.now(),
       url: window.location.href,
       consentString: this.consentString ?? "",
-      /**
-       * TODO: get clarification from MN on this
-       * Araz — the way I see it, all the enrichment stuff should happen off-line
-       * (like if someone logs in, their CDP can associate the existing NPID with their email, etc… ,
-       *  and then enrich the snowflake table with the attributes)
-       */
-      previousId: storedId && userId !== storedId ? storedId : undefined,
-      publisherSegments,
     };
 
     try {
@@ -91,8 +78,6 @@ export class NewsPassIDImpl {
       // Set segments from response or use publisher segments if provided
       if (Array.isArray(response.segments)) {
         this.segments = response.segments;
-      } else if (publisherSegments && Array.isArray(publisherSegments)) {
-        this.segments = publisherSegments;
       } else {
         this.segments = [];
       }
@@ -120,17 +105,9 @@ export class NewsPassIDImpl {
     } catch (error) {
       console.error("newspassid: Failed to send ID to backend:", error);
 
-      // Use publisher segments if provided, even if backend call fails
-      if (publisherSegments) {
-        this.segments = publisherSegments;
-        this.segmentKeyValue =
-          this.convertSegmentsToKeyValue(publisherSegments);
-        this.applySegmentsToPage(publisherSegments);
-
-        // Inject meta tags if enabled
-        if (this.config.injectMetaTags) {
-          this.injectSegmentMetaTags();
-        }
+      // Inject meta tags if enabled
+      if (this.config.injectMetaTags) {
+        this.injectSegmentMetaTags();
       }
     }
 
@@ -150,13 +127,6 @@ export class NewsPassIDImpl {
    */
   getSegments(): string[] {
     return [...this.segments];
-  }
-
-  /**
-   * Get segments as key-value pairs
-   */
-  getSegmentsAsKeyValue(): SegmentKeyValue {
-    return { ...this.segmentKeyValue };
   }
 
   /**
@@ -230,25 +200,11 @@ export class NewsPassIDImpl {
     window.newspass_segments = segments;
     storeId("npid_segments", segments.join(","));
 
-    // const googletag = window.googletag ?? { cmd: [] };
-
-    // For Google Ad Manager (GAM)
-    // Set all segments as a single array to a single key
-    // googletag.pubads().setTargeting("npid_segments", segments);
-
-    // // For Prebid.js
-    // if (window.pbjs) {
-    //   try {
-    //     // Set targeting for prebid
-    //     window.pbjs.setTargetingForGPTAsync({
-    //       npid_segments: segments,
-    //     });
-    //   } catch (e) {
-    //     console.warn("newspassid: Error setting Prebid targeting:", e);
-    //   }
-    // }
-
-    // Add data attribute to the HTML with all segments
+    /**
+     * Add data attribute to the HTML with all segments
+     * TODO: Do we want to add this as a data attribute on the body?
+     * would it be better to add it as a JSON data structure?
+     */
     const body = document.querySelector("body");
     if (body) {
       // Set a single data attribute with JSON string of all segments

@@ -71,10 +71,6 @@ export interface IdPayload {
   url: string;
   /** User consent string (required) */
   consentString: string;
-  /** Previous NewsPassID for mapping (optional) */
-  previousId?: string;
-  /** Custom publisher segment IDs (optional) */
-  publisherSegments?: string[];
 }
 
 export interface SegmentResponse {

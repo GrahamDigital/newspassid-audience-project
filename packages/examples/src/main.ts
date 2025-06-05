@@ -86,7 +86,7 @@ clearIdBtn.addEventListener("click", () => {
 setIdBtn.addEventListener("click", () => {
   if (window.newspassid?.setID) {
     window.newspassid
-      .setID(undefined, undefined, true)
+      .setID(undefined, true)
       .then((id) => {
         resultsEl.textContent = `New ID set: ${id}`;
         updateResults();
