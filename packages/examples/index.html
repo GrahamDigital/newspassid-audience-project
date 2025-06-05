@@ -10,39 +10,7 @@
       async
       src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"
     ></script>
-    <script>
-      window.googletag = window.googletag || { cmd: [] };
-      // get newspassid cookie
-      let newspassid = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("newspassid="))
-        ?.split("=")[1];
-      console.log("[newspassid] cookie", newspassid);
-
-      if (!newspassid) {
-        // Look in localStorage
-        newspassid = localStorage.getItem("newspassid");
-        console.log("[newspassid] localStorage", newspassid);
-      }
-
-      googletag.cmd.push(function () {
-        // Define ad slots
-        googletag
-          .defineSlot(
-            "/6355419/Travel/Europe/France/Paris",
-            [300, 250],
-            "div-gpt-ad-1682372512510-0",
-          )
-          .addService(googletag.pubads());
-
-        // set ppid
-        googletag.pubads().setPublisherProvidedId(newspassid);
-
-        // Enable services
-        googletag.pubads().enableSingleRequest();
-        googletag.enableServices();
-      });
-    </script>
+    <script type="module" src="./src/setup.ts"></script>
 
     <!-- Other head elements -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -134,11 +102,12 @@ No data yet.</pre
           id="div-gpt-ad-1682372512510-0"
           class="w-[300px] h-[250px] mx-auto bg-muted rounded flex items-center justify-center border"
         >
-          <script>
+          <!-- <script>
+            googletag = window.googletag || { cmd: [] };
             googletag.cmd.push(function () {
               googletag.display("div-gpt-ad-1682372512510-0");
             });
-          </script>
+          </script> -->
         </div>
       </section>
     </div>

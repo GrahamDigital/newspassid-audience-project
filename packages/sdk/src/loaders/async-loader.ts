@@ -11,7 +11,7 @@ import type { NewsPassConfig } from "../core/types";
 // Retrieve configuration from global variable or use default
 const NEWSPASS_CONFIG: NewsPassConfig = window.NEWSPASS_CONFIG ?? {
   namespace: "default-publisher",
-  lambdaEndpoint: import.meta.env.VITE_API_URL.slice(0, -1),
+  lambdaEndpoint: import.meta.env.VITE_API_URL,
 };
 
 // Initialize the queue and newspassid global object
@@ -20,9 +20,7 @@ window.NewsPassIDQ = window.NewsPassIDQ ?? [];
 // Function to load the newspassid script
 (function () {
   const script = document.createElement("script");
-  script.src = ["production", "dev"].includes(import.meta.env.VITE_STAGE)
-    ? `${import.meta.env.VITE_CDN_URL}/dist/newspassid.js`
-    : "http://localhost:3000/newspassid.js";
+  script.src = `${import.meta.env.VITE_CDN_URL}/newspassid.js`;
   script.type = "module";
   script.async = true;
 

@@ -12,8 +12,12 @@ export const sdk = new sst.aws.StaticSite("sdk", {
     path: "/dist",
   },
   environment: {
-    VITE_API_URL: api.url,
     VITE_STAGE: $app.stage,
-    VITE_CDN_URL: router.url,
+    VITE_API_URL: ["production", "dev"].includes($app.stage)
+      ? api.url
+      : api.url.apply((url) => `${url}newspassid`),
+    VITE_CDN_URL: ["production", "dev"].includes($app.stage)
+      ? router.url.apply((url) => `${url}/dist`)
+      : "http://localhost:3000",
   },
 });

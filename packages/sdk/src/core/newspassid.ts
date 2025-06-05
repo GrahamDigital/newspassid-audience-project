@@ -9,8 +9,9 @@ import type {
   IdPayload,
   NewsPassConfig,
   NewsPassID,
-  // NewsPassID, // Removed as it's no longer used directly in this file
+  NewsPassSegmentsReadyDetail,
   SegmentKeyValue,
+  SegmentResponse,
 } from "./types";
 
 export class NewsPassIDImpl {
@@ -74,6 +75,12 @@ export class NewsPassIDImpl {
       timestamp: Date.now(),
       url: window.location.href,
       consentString: this.consentString ?? "",
+      /**
+       * TODO: get clarification from MN on this
+       * Araz — the way I see it, all the enrichment stuff should happen off-line
+       * (like if someone logs in, their CDP can associate the existing NPID with their email, etc… ,
+       *  and then enrich the snowflake table with the attributes)
+       */
       previousId: storedId && userId !== storedId ? storedId : undefined,
       publisherSegments,
     };
@@ -221,24 +228,25 @@ export class NewsPassIDImpl {
   private applySegmentsToPage(segments: string[]): void {
     // Global data layer for easy access
     window.newspass_segments = segments;
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    const googletag = window.googletag ?? { cmd: [] };
+    storeId("npid_segments", segments.join(","));
+
+    // const googletag = window.googletag ?? { cmd: [] };
 
     // For Google Ad Manager (GAM)
     // Set all segments as a single array to a single key
-    googletag.pubads().setTargeting("npid_segments", segments);
+    // googletag.pubads().setTargeting("npid_segments", segments);
 
-    // For Prebid.js
-    if (window.pbjs) {
-      try {
-        // Set targeting for prebid
-        window.pbjs.setTargetingForGPTAsync({
-          npid_segments: segments,
-        });
-      } catch (e) {
-        console.warn("newspassid: Error setting Prebid targeting:", e);
-      }
-    }
+    // // For Prebid.js
+    // if (window.pbjs) {
+    //   try {
+    //     // Set targeting for prebid
+    //     window.pbjs.setTargetingForGPTAsync({
+    //       npid_segments: segments,
+    //     });
+    //   } catch (e) {
+    //     console.warn("newspassid: Error setting Prebid targeting:", e);
+    //   }
+    // }
 
     // Add data attribute to the HTML with all segments
     const body = document.querySelector("body");
@@ -257,4 +265,10 @@ export function createNewsPassID(config: NewsPassConfig): NewsPassIDImpl {
   return new NewsPassIDImpl(config);
 }
 
-export type { NewsPassConfig, NewsPassID };
+export type {
+  NewsPassConfig,
+  NewsPassID,
+  NewsPassSegmentsReadyDetail,
+  SegmentResponse,
+  SegmentKeyValue,
+};
