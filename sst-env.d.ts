@@ -38,6 +38,11 @@ declare module "sst" {
       "type": "sst.aws.Function"
       "url": string
     }
+    "braze-mau-tracker": {
+      "name": string
+      "type": "sst.aws.Function"
+      "url": string
+    }
     "data": {
       "name": string
       "type": "sst.aws.Bucket"
@@ -52,6 +57,11 @@ declare module "sst" {
     }
     "sdk": {
       "type": "sst.aws.StaticSite"
+      "url": string
+    }
+    "snowflake-processor": {
+      "name": string
+      "type": "sst.aws.Function"
       "url": string
     }
   }

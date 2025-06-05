@@ -86,6 +86,12 @@ export interface SegmentResponse {
 // Segment types
 export type SegmentKeyValue = Record<string, string>;
 
+// Custom event types
+export interface NewsPassSegmentsReadyDetail {
+  segments: string[];
+  segmentKeyValue: SegmentKeyValue;
+}
+
 export type NewsPassID = NewsPassIDImplClass;
 
 // Extend Window interface
@@ -98,12 +104,6 @@ declare global {
     NEWSPASS_CONFIG?: NewsPassConfig;
     createNewsPassID?: (config: NewsPassConfig) => NewsPassID;
     newspass_initialized?: boolean;
-    // googletag?: {
-    //   pubads: () => {
-    //     setTargeting: (key: string, value: string | string[]) => void;
-    //     refresh: () => void;
-    //   };
-    // };
     pbjs?: {
       setTargetingForGPTAsync: (targeting: Record<string, unknown>) => void;
     };

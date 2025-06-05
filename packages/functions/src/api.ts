@@ -1,12 +1,17 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { zValidator } from "@hono/zod-validator";
+import { createObjectCsvStringifier } from "csv-writer";
+import type { Context } from "hono";
 import { Hono } from "hono";
 import type { LambdaContext, LambdaEvent } from "hono/aws-lambda";
 import { handle } from "hono/aws-lambda";
-import { setCookie } from "hono/cookie";
+import { compress } from "hono/compress";
+import { getCookie, setCookie } from "hono/cookie";
 import { cors } from "hono/cors";
+import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
 import { Resource } from "sst";
+import { UAParser } from "ua-parser-js";
 import { s3 } from "@/lib/s3";
 import { logRecordSchema } from "@/lib/schema/npid";
 import {
@@ -21,9 +26,57 @@ interface Bindings {
   lambdaContext: LambdaContext;
 }
 
+interface Variables {
+  ip?: string;
+  userAgent?: string;
+}
+
 const ID_FOLDER = process.env.ID_FOLDER ?? "newspassid";
 
-const app = new Hono<{ Bindings: Bindings }>()
+function getClientIP(
+  c: Context<{ Bindings: Bindings; Variables: Variables }>,
+): string | undefined {
+  const event = c.env.event;
+
+  // Check X-Forwarded-For header first (for requests through ALB/CloudFront)
+  const forwardedFor = c.req.header("x-forwarded-for");
+  if (forwardedFor) {
+    return forwardedFor.split(",")[0].trim();
+  }
+
+  // Check X-Real-IP header
+  const realIP = c.req.header("x-real-ip");
+  if (realIP) {
+    return realIP;
+  }
+
+  // Fall back to Lambda event sourceIp - handle different context types
+  const requestContext = event.requestContext;
+  if ("http" in requestContext && requestContext.http.sourceIp) {
+    return requestContext.http.sourceIp;
+  }
+  if ("identity" in requestContext && requestContext.identity.sourceIp) {
+    return requestContext.identity.sourceIp;
+  }
+
+  return undefined;
+}
+
+function getClientUserAgent(
+  c: Context<{ Bindings: Bindings; Variables: Variables }>,
+): string | undefined {
+  const event = c.env.event;
+  const requestContext = event.requestContext;
+  if ("http" in requestContext && requestContext.http.userAgent) {
+    const ua = requestContext.http.userAgent;
+    const parsedUa = UAParser(ua);
+    return parsedUa.ua;
+  }
+
+  return undefined;
+}
+
+const app = new Hono<{ Bindings: Bindings; Variables: Variables }>()
   .use(
     cors({
       origin: [
@@ -43,12 +96,26 @@ const app = new Hono<{ Bindings: Bindings }>()
       credentials: true,
     }),
   )
+  .use(compress())
   .use(logger())
+  .use(async (c, next) => {
+    const ip = getClientIP(c);
+    c.set("ip", ip);
+    const userAgent = getClientUserAgent(c);
+    c.set("userAgent", userAgent);
+    await next();
+  })
   .post("/newspassid", zValidator("json", logRecordSchema), async (c) => {
     try {
       const data = c.req.valid("json");
-
       console.info("[api.handler] body", data);
+      const ip = c.get("ip");
+      console.info("[api.handler] ip", ip);
+      const userAgent = c.get("userAgent");
+      console.info("[api.handler] userAgent", userAgent);
+      // get the newspassid cookie
+      const newspassid = getCookie(c, "newspassid");
+      console.info("[api.handler] newspassid cookie", newspassid);
 
       // Validate ID format
       if (!isValidId(data.id)) {
@@ -70,15 +137,48 @@ const app = new Hono<{ Bindings: Bindings }>()
       const segmentsFile = `${ID_FOLDER}/segments.csv`;
       const validSegments = await getValidSegments(segmentsFile);
 
-      // Prepare CSV content
-      const csvContent = [
-        "id,timestamp,url,consentString,previousId,segments,publisherSegments",
-        `"${data.id}","${data.timestamp}","${data.url}","${
-          data.consentString
-        }","${data.previousId ?? ""}","${validSegments.join(",")}","${
-          data.publisherSegments?.join("|") ?? ""
-        }"`,
-      ].join("\n");
+      // set the segments in the cookie
+      setCookie(c, "npid_segments", validSegments.join(","), {
+        path: "/",
+        secure: true,
+        httpOnly: false,
+        sameSite: "none",
+      });
+
+      const csvContent = createObjectCsvStringifier({
+        header: [
+          { id: "id", title: "id" },
+          { id: "timestamp", title: "timestamp" },
+          { id: "url", title: "url" },
+          { id: "consentString", title: "consentString" },
+          { id: "previousId", title: "previousId" },
+          { id: "ip", title: "ip" },
+          { id: "segments", title: "segments" },
+          { id: "publisherSegments", title: "publisherSegments" },
+        ],
+      });
+
+      const csvHeaderString = csvContent.getHeaderString();
+      const csvRecords = csvContent.stringifyRecords([
+        {
+          id: data.id,
+          timestamp: data.timestamp,
+          url: data.url,
+          consentString: data.consentString,
+          previousId: data.previousId,
+          ip,
+          segments: validSegments,
+          publisherSegments: data.publisherSegments,
+        },
+      ]);
+
+      const csvString = csvHeaderString ? csvHeaderString + csvRecords : null;
+
+      if (!csvString) {
+        throw new HTTPException(500, {
+          message: "Failed to generate CSV string",
+        });
+      }
 
       // Upload to S3
       await s3.send(
@@ -86,7 +186,7 @@ const app = new Hono<{ Bindings: Bindings }>()
           Bucket: Resource.data.name,
           Key: `${ID_FOLDER}/publisher/${domain}/${data.id}/${data.timestamp}.csv`,
           ContentType: "text/csv",
-          Body: csvContent,
+          Body: csvString,
         }),
       );
 
@@ -96,6 +196,7 @@ const app = new Hono<{ Bindings: Bindings }>()
         timestamp: data.timestamp,
         url: data.url,
         domain,
+        ip,
         consentString: data.consentString,
         previousId: data.previousId,
         segments: validSegments,

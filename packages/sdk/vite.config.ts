@@ -113,7 +113,16 @@ export default defineConfig(({ mode, command }) => {
         emptyOutDir: false, // Don't clean the output directory
         minify: true,
       },
-      plugins: [tsconfigPaths(), dts({ rollupTypes: true })],
+      plugins: [
+        tsconfigPaths(),
+        dts({
+          rollupTypes: true,
+          afterBuild(emittedFiles) {
+            const files = Array.from(emittedFiles.keys());
+            console.log("[async] dts", files);
+          },
+        }),
+      ],
     };
   }
 
@@ -129,9 +138,18 @@ export default defineConfig(({ mode, command }) => {
           format === "umd" ? "newspassid.js" : "newspassid.esm.js",
       },
       outDir: "dist",
-      emptyOutDir: true, // Clean the output directory
+      // emptyOutDir: true, // Clean the output directory
       minify: true,
     },
-    plugins: [tsconfigPaths(), dts({ rollupTypes: true })],
+    plugins: [
+      tsconfigPaths(),
+      dts({
+        afterBuild(emittedFiles) {
+          const files = Array.from(emittedFiles.keys());
+          console.log("[main] dts", files);
+        },
+        rollupTypes: true,
+      }),
+    ],
   };
 });

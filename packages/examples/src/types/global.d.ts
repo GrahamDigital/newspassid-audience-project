@@ -47,34 +47,6 @@ interface GPP {
   events?: [string, GPPCallback, unknown?][];
 }
 
-// NewsPassID specific types
-// interface NewsPassConfig {
-//   /** Publisher namespace for the ID (e.g., 'your-publisher') */
-//   namespace: string;
-//   /** URL endpoint for the NewsPassID backend service */
-//   lambdaEndpoint: string;
-//   /** Custom storage key for localStorage (default: 'newspassid') */
-//   storageKey?: string;
-//   /** Whether to inject segment meta tags in the head (default: true) */
-//   injectMetaTags?: boolean;
-// }
-
-// Segment types
-// type SegmentKeyValue = Record<string, string>;
-
-// Main NewsPassID interface
-// interface NewsPassID {
-//   clearID(): void;
-//   getID(): string | null;
-//   getSegments(): string[];
-//   getSegmentsAsKeyValue(): SegmentKeyValue;
-//   setID(
-//     id?: string,
-//     publisherSegments?: string[],
-//     generateNewId?: boolean,
-//   ): Promise<string>;
-// }
-
 // Extend Window interface
 declare global {
   interface Window {

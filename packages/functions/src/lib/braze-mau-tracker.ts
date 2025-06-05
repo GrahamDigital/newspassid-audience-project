@@ -143,6 +143,14 @@ class BrazeMauTracker {
     const alertThreshold = parseFloat(process.env.ALERT_THRESHOLD ?? "0.8");
     const isAlertThresholdMet = pacingPercentage >= alertThreshold;
 
+    if (isAlertThresholdMet) {
+      console.info("Alert threshold met:", {
+        pacingPercentage,
+        alertThreshold,
+        isAlertThresholdMet,
+      });
+    }
+
     // TODO: send alert if alert threshold is met
 
     return {
