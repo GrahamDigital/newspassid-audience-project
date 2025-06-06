@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 
 import { router } from "./router";
+import {
+  SNOWFLAKE_ACCOUNT,
+  SNOWFLAKE_DATABASE,
+  SNOWFLAKE_PASSWORD,
+  SNOWFLAKE_SCHEMA,
+  SNOWFLAKE_USER,
+  SNOWFLAKE_WAREHOUSE,
+} from "./secrets";
 import { bucket } from "./storage";
-
-const SNOWFLAKE_ACCOUNT = new sst.Secret("SNOWFLAKE_ACCOUNT");
-const SNOWFLAKE_USER = new sst.Secret("SNOWFLAKE_USER");
-const SNOWFLAKE_PASSWORD = new sst.Secret("SNOWFLAKE_PASSWORD");
-const SNOWFLAKE_WAREHOUSE = new sst.Secret("SNOWFLAKE_WAREHOUSE");
-const SNOWFLAKE_DATABASE = new sst.Secret("SNOWFLAKE_DATABASE");
-const SNOWFLAKE_SCHEMA = new sst.Secret("SNOWFLAKE_SCHEMA");
 
 export const api = new sst.aws.Function("api", {
   handler: "packages/functions/src/api.handler",
@@ -33,27 +34,6 @@ export const api = new sst.aws.Function("api", {
     ID_FOLDER: "newspassid",
   },
 });
-
-// export const webhook = new sst.aws.Function("webhook", {
-//   handler: "packages/functions/src/lib/webhook.handler",
-//   runtime: "nodejs22.x",
-//   link: [bucket],
-//   ...(["production", "dev"].includes($app.stage)
-//     ? {
-//         url: {
-//           router: {
-//             instance: router,
-//             path: "/newspassid/webhook",
-//           },
-//           cors: false,
-//         },
-//       }
-//     : {
-//         url: {
-//           cors: false,
-//         },
-//       }),
-// });
 
 $app.stage === "production"
   ? new sst.aws.Cron("snowflake-processor", {

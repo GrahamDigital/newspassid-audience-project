@@ -38,9 +38,17 @@ declare module "sst" {
       "type": "sst.aws.Function"
       "url": string
     }
+    "braze-dlq": {
+      "type": "sst.aws.Queue"
+      "url": string
+    }
     "braze-mau-tracker": {
       "name": string
       "type": "sst.aws.Function"
+      "url": string
+    }
+    "braze-queue": {
+      "type": "sst.aws.Queue"
       "url": string
     }
     "data": {
@@ -49,6 +57,11 @@ declare module "sst" {
     }
     "demo": {
       "type": "sst.aws.StaticSite"
+      "url": string
+    }
+    "queue-sender": {
+      "name": string
+      "type": "sst.aws.Function"
       "url": string
     }
     "router": {

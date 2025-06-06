@@ -1,6 +1,5 @@
+import { BRAZE_API_KEY } from "./secrets";
 import { bucket } from "./storage";
-
-const BRAZE_API_KEY = new sst.Secret("BRAZE_API_KEY");
 
 // Braze MAU tracker - runs every 2 minutes
 export const brazeMauTracker =
