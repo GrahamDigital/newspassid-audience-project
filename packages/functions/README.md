@@ -18,7 +18,6 @@ The main API endpoint for processing NewsPassID requests.
 - Stores data in two formats:
   - **CSV format**: `newspassid/publisher/{domain}/{id}/{timestamp}.csv` - for backward compatibility
   - **JSON format**: `newspassid/properties/{domain}/{id}/{timestamp}.json` - for analytics (separate schema for Snowflake/Athena)
-- Creates ID mappings when `previousId` is provided
 - Sets secure cookies for client-side access
 
 **Request Schema**:
@@ -29,7 +28,6 @@ The main API endpoint for processing NewsPassID requests.
   "timestamp": "number (required)",
   "url": "string (required)",
   "consentString": "string (required)",
-  "previousId": "string (optional)",
   "publisherSegments": "string[] (optional)"
 }
 ```
@@ -101,12 +99,9 @@ newspassid/
 │   └── {domain}/
 │       └── {id}/
 │           └── {timestamp}.json
+├── pacing/
+│   └── braze-mau-projection.json  # Current MAU pacing data
 ├── segments.csv         # Valid segments with expiration timestamps
-└── mappings/           # ID mapping files
-    └── {previousId}.csv
-
-pacing/
-└── braze-mau-projection.json  # Current MAU pacing data
 ```
 
 ## Testing

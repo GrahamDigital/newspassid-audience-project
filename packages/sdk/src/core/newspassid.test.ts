@@ -162,7 +162,7 @@ describe("NewsPassID", () => {
       lambdaEndpoint: "https://api.example.com/newspassid",
     });
 
-    const id = await newspassId.setID(undefined, undefined, true);
+    const id = await newspassId.setID(undefined, true);
     expect(id).toBeDefined();
     expect(id).toContain("test-");
     expect(localStorageMock.setItem).toHaveBeenCalledWith("newspassid", id);
@@ -174,7 +174,7 @@ describe("NewsPassID", () => {
       lambdaEndpoint: "https://api.example.com/newspassid",
     });
 
-    const id = await newspassId.setID("test-id", undefined, true);
+    const id = await newspassId.setID("test-id", true);
     expect(id).toBeDefined();
     expect(id).toContain("test-");
     expect(localStorageMock.setItem).toHaveBeenCalledWith("newspassid", id);
@@ -228,7 +228,7 @@ describe("NewsPassID Advanced Features", () => {
       json: () => Promise.resolve({ segments: customSegments, success: true }),
     });
 
-    const id = await newspassId.setID("test-id", customSegments);
+    const id = await newspassId.setID("test-id");
 
     expect(id).toBe("test-id");
     expect(newspassId.getSegments()).toEqual(customSegments);
@@ -241,7 +241,7 @@ describe("NewsPassID Advanced Features", () => {
       json: () => Promise.resolve({ segments: [], success: true }),
     });
 
-    const id = await newspassId.setID("test-id", []);
+    const id = await newspassId.setID("test-id");
 
     expect(id).toBe("test-id");
     expect(newspassId.getSegments()).toEqual([]);
@@ -256,17 +256,17 @@ describe("NewsPassID Advanced Features", () => {
       json: () => Promise.resolve({ segments, success: true }),
     });
 
-    await newspassId.setID("test-id", segments);
+    await newspassId.setID("test-id");
 
     // Verify meta tag creation and attributes
     expect(mockDocument.createElement).toHaveBeenCalledWith("meta");
     expect(mockMetaElement.setAttribute).toHaveBeenCalledWith(
       "name",
-      expect.stringMatching(/^newspass_segment_/),
+      "npid_segments",
     );
     expect(mockMetaElement.setAttribute).toHaveBeenCalledWith(
       "content",
-      expect.any(String),
+      "segment1,segment2",
     );
     expect(mockDocument.head.appendChild).toHaveBeenCalledWith(mockMetaElement);
   });
@@ -282,8 +282,7 @@ describe("NewsPassID Advanced Features", () => {
       json: () => Promise.resolve({ segments: ["segment1"], success: true }),
     });
 
-    const segments = ["segment1"];
-    await newspassId.setID("test-id", segments);
+    await newspassId.setID("test-id");
 
     // Should not throw, just log error
     newspassId.getSegments();

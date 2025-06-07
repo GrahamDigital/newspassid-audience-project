@@ -51,11 +51,10 @@ interface GPP {
 declare global {
   interface Window {
     __gpp?: GPP;
+    createNewsPassID?: (config: NewsPassConfig) => NewsPassID;
     newspassid?: NewsPassID;
-    NewsPassIDQ?: [string, ...unknown[]][];
     newspass_segments?: string[];
     NEWSPASS_CONFIG?: NewsPassConfig;
-    createNewsPassID?: (config: NewsPassConfig) => NewsPassID;
     newspass_initialized?: boolean;
     pbjs?: {
       setTargetingForGPTAsync: (targeting: Record<string, unknown>) => void;

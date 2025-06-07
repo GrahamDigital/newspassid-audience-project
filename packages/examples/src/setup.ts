@@ -1,4 +1,5 @@
-window.googletag = window.googletag || { cmd: [] };
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+window.googletag = window.googletag ?? { cmd: [] };
 
 // get newspassid cookie
 let newspassid = document.cookie

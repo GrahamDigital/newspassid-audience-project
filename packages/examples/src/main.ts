@@ -14,10 +14,9 @@ head.appendChild(script);
 window.NEWSPASS_CONFIG = {
   namespace: "gmg",
   lambdaEndpoint: import.meta.env.VITE_API_URL,
+  webhookEndpoint:
+    "https://iurctgkecd66ixbevgm6vhppxy0ptojn.lambda-url.us-east-1.on.aws",
 };
-
-// Initialize the queue and NewsPassID global object
-window.NewsPassIDQ = window.NewsPassIDQ ?? [];
 
 // DOM elements
 const statusEl = document.getElementById("status") as HTMLDivElement;
@@ -34,6 +33,8 @@ const setIdBtn = document.getElementById("manual-set-id") as HTMLButtonElement;
  * TODO: This doesn't do anything, we should probably remove the event listener
  */
 window.addEventListener("newspass_segments_ready", (event) => {
+  statusEl.textContent = "NewsPassID is active and segments are loaded.";
+
   const { detail } = event as CustomEvent<NewsPassSegmentsReadyDetail>;
   console.info("newspass_segments_ready", detail);
 });
@@ -87,7 +88,7 @@ clearIdBtn.addEventListener("click", () => {
 setIdBtn.addEventListener("click", () => {
   if (window.newspassid?.setID) {
     window.newspassid
-      .setID(undefined, undefined, true)
+      .setID(undefined, true)
       .then((id) => {
         resultsEl.textContent = `New ID set: ${id}`;
         updateResults();

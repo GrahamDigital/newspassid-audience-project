@@ -1,3 +1,4 @@
+import tsconfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
@@ -11,4 +12,5 @@ export default defineConfig({
       "./__mocks__/fs/promises.cjs",
     ],
   },
+  plugins: [tsconfigPaths()],
 });

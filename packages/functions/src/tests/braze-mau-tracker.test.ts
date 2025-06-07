@@ -22,6 +22,9 @@ vi.mock("sst", () => {
       data: {
         name: "test-bucket",
       },
+      BRAZE_API_KEY: {
+        value: "test-api-key",
+      },
     },
   };
 });

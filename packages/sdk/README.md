@@ -50,26 +50,6 @@ This will generate the following files in the `dist` directory:
     lambdaEndpoint: "https://npid.gmg.io/newspassid",
   };
 
-  // Initialize the queue and NewsPassID global object
-  window.NewsPassIDQ = window.NewsPassIDQ || [];
-  window.newspassid = window.newspassid || {
-    // Stub method that queues calls until the real implementation loads
-    setID: function (id) {
-      window.NewsPassIDQ.push(["setID", id]);
-    },
-    getID: function () {
-      window.NewsPassIDQ.push(["getID"]);
-      return null;
-    },
-    getSegments: function () {
-      window.NewsPassIDQ.push(["getSegments"]);
-      return [];
-    },
-    clearID: function () {
-      window.NewsPassIDQ.push(["clearID"]);
-    },
-  };
-
   // Function to load the NewsPassID script
   (function () {
     // Create script element

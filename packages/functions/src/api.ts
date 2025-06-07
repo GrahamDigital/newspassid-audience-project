@@ -151,10 +151,13 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>()
           { id: "timestamp", title: "timestamp" },
           { id: "url", title: "url" },
           { id: "consentString", title: "consentString" },
-          { id: "previousId", title: "previousId" },
           { id: "ip", title: "ip" },
-          { id: "segments", title: "segments" },
-          { id: "publisherSegments", title: "publisherSegments" },
+          { id: "userAgent", title: "userAgent" },
+          { id: "platform", title: "platform" },
+          { id: "canonicalUrl", title: "canonicalUrl" },
+          { id: "title", title: "title" },
+          { id: "description", title: "description" },
+          { id: "keywords", title: "keywords" },
         ],
       });
 
@@ -165,10 +168,13 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>()
           timestamp: data.timestamp,
           url: data.url,
           consentString: data.consentString,
-          previousId: data.previousId,
           ip,
-          segments: validSegments,
-          publisherSegments: data.publisherSegments,
+          userAgent,
+          platform: data.platform,
+          canonicalUrl: data.canonicalUrl,
+          title: data.title,
+          description: data.description,
+          keywords: data.keywords,
         },
       ]);
 
@@ -192,16 +198,19 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>()
 
       // Create properties JSON file in separate directory for analytics
       const propertiesData = {
-        id: data.id,
-        timestamp: data.timestamp,
-        url: data.url,
-        domain,
-        ip,
+        canonicalUrl: data.canonicalUrl,
         consentString: data.consentString,
-        previousId: data.previousId,
-        segments: validSegments,
-        publisherSegments: data.publisherSegments,
+        description: data.description,
+        domain,
+        id: data.id,
+        ip,
+        keywords: data.keywords,
+        platform: data.platform,
         processedAt: new Date().toISOString(),
+        timestamp: data.timestamp,
+        title: data.title,
+        url: data.url,
+        userAgent,
       };
 
       await s3.send(
@@ -212,23 +221,6 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>()
           Body: JSON.stringify(propertiesData),
         }),
       );
-
-      // If there's a previous ID, create a mapping
-      if (data.previousId) {
-        const mappingContent = [
-          "oldId,newId,timestamp",
-          `"${data.previousId}","${data.id}",${data.timestamp}`,
-        ].join("\n");
-
-        await s3.send(
-          new PutObjectCommand({
-            Bucket: Resource.data.name,
-            Key: `${ID_FOLDER}/publisher/${domain}/mappings/${data.previousId}.csv`,
-            ContentType: "text/csv",
-            Body: mappingContent,
-          }),
-        );
-      }
 
       // set cookie
       setCookie(c, "newspassid", data.id, {
