@@ -15,9 +15,6 @@ interface QueueMessage {
 }
 
 export const handler: SQSHandler = async (event: SQSEvent) => {
-  const brazeApiKey = Resource.BRAZE_API_KEY.value;
-  const brazeEndpoint = process.env.BRAZE_REST_ENDPOINT!;
-
   console.log(`Processing ${event.Records.length} messages`);
 
   for (const record of event.Records) {
@@ -44,25 +41,30 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
 async function updateBrazeUserProfile(
   attributes: BrazeUserAttributes,
 ): Promise<void> {
-  const brazeApiKey = process.env.BRAZE_API_KEY!;
+  const brazeApiKey = Resource.BRAZE_API_KEY.value;
   const brazeEndpoint = process.env.BRAZE_REST_ENDPOINT!;
 
-  const response = await fetch(`${brazeEndpoint}/users/track`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${brazeApiKey}`,
-    },
-    body: JSON.stringify({
-      attributes: [attributes],
-    }),
-  });
+  console.log(
+    "[braze-processor] Updating user profile",
+    attributes.external_id,
+  );
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Braze API error: ${response.status} - ${errorText}`);
-  }
+  // const response = await fetch(`${brazeEndpoint}/users/track`, {
+  //   method: "POST",
+  //   headers: {
+  //     "Content-Type": "application/json",
+  //     Authorization: `Bearer ${brazeApiKey}`,
+  //   },
+  //   body: JSON.stringify({
+  //     attributes: [attributes],
+  //   }),
+  // });
 
-  const result = await response.json();
-  console.log("Braze API response:", result);
+  // if (!response.ok) {
+  //   const errorText = await response.text();
+  //   throw new Error(`Braze API error: ${response.status} - ${errorText}`);
+  // }
+
+  // const result = await response.json();
+  // console.log("Braze API response:", result);
 }

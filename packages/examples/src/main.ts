@@ -14,6 +14,8 @@ head.appendChild(script);
 window.NEWSPASS_CONFIG = {
   namespace: "gmg",
   lambdaEndpoint: import.meta.env.VITE_API_URL,
+  webhookEndpoint:
+    "https://iurctgkecd66ixbevgm6vhppxy0ptojn.lambda-url.us-east-1.on.aws",
 };
 
 // DOM elements
