@@ -14,40 +14,77 @@ interface QueueMessage {
   attributes: Omit<BrazeUserAttributes, "external_id">;
 }
 
+const BATCH_SIZE = 50; // Braze API supports up to 50 updates per request
+
 export const handler: SQSHandler = async (event: SQSEvent) => {
-  console.log(`Processing ${event.Records.length} messages`);
+  console.info(`Processing ${event.Records.length} messages`);
+
+  // Parse all messages first
+  const userAttributes: BrazeUserAttributes[] = [];
+  const failedMessages: { record: SQSEvent["Records"][0]; error: Error }[] = [];
 
   for (const record of event.Records) {
     try {
       const message = JSON.parse(record.body) as QueueMessage;
-
-      await updateBrazeUserProfile({
+      userAttributes.push({
         external_id: message.userId,
         ...message.attributes,
       });
-
-      console.log(`Successfully processed user: ${message.userId}`);
     } catch (error) {
-      console.error("Error processing message:", error);
+      console.error("Error parsing message:", error);
       console.error("Message body:", record.body);
-
-      // In a production environment, you might want to send failed
-      // messages to a dead letter queue
-      throw error; // This will cause the message to be retried
+      failedMessages.push({
+        record,
+        error: error instanceof Error ? error : new Error(String(error)),
+      });
     }
+  }
+
+  // Process in batches
+  const batches = chunkArray(userAttributes, BATCH_SIZE);
+  console.info(`Processing ${batches.length} batches of user updates`);
+
+  for (let i = 0; i < batches.length; i++) {
+    const batch = batches[i];
+    try {
+      await updateBrazeUserProfiles(batch);
+      console.info(
+        `Successfully processed batch ${i + 1}/${batches.length} with ${batch.length} users`,
+      );
+    } catch (error) {
+      console.error(`Error processing batch ${i + 1}:`, error);
+      // Re-throw to cause SQS to retry the entire batch
+      throw error;
+    }
+  }
+
+  // If there were any failed message parsing, throw an error to retry
+  if (failedMessages.length > 0) {
+    console.error(`Failed to parse ${failedMessages.length} messages`);
+    throw new Error(`Failed to parse ${failedMessages.length} messages`);
   }
 };
 
-async function updateBrazeUserProfile(
-  attributes: BrazeUserAttributes,
+async function updateBrazeUserProfiles(
+  attributesBatch: BrazeUserAttributes[],
 ): Promise<void> {
   const brazeApiKey = Resource.BRAZE_API_KEY.value;
-  const brazeEndpoint = process.env.BRAZE_REST_ENDPOINT!;
+  const brazeEndpoint = process.env.BRAZE_REST_ENDPOINT;
 
   console.log(
-    "[braze-processor] Updating user profile",
-    attributes.external_id,
+    "[braze-processor] Updating user profiles",
+    attributesBatch.map((attr) => attr.external_id).join(", "),
+    "with batch size",
+    attributesBatch.length,
   );
+  // if (!brazeEndpoint) {
+  //   throw new Error("BRAZE_REST_ENDPOINT environment variable is not set");
+  // }
+
+  // console.info(
+  //   `[braze-processor] Updating ${attributesBatch.length} user profiles`,
+  //   attributesBatch.map((attr) => attr.external_id).join(", "),
+  // );
 
   // const response = await fetch(`${brazeEndpoint}/users/track`, {
   //   method: "POST",
@@ -56,7 +93,7 @@ async function updateBrazeUserProfile(
   //     Authorization: `Bearer ${brazeApiKey}`,
   //   },
   //   body: JSON.stringify({
-  //     attributes: [attributes],
+  //     attributes: attributesBatch,
   //   }),
   // });
 
@@ -66,5 +103,13 @@ async function updateBrazeUserProfile(
   // }
 
   // const result = await response.json();
-  // console.log("Braze API response:", result);
+  // console.info("Braze API response:", result);
+}
+
+function chunkArray<T>(array: T[], chunkSize: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < array.length; i += chunkSize) {
+    chunks.push(array.slice(i, i + chunkSize));
+  }
+  return chunks;
 }
